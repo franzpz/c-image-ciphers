@@ -18,24 +18,62 @@ int calcGroupNumber(double t);
 int find(double array[], double data, int length);
 
 void createPermutationSequence(int permutationSequence[], double r, double x, int sequenceLength);
+double generateControlParameters(double basicR, unsigned char imageBytes[], int numberOfImageBytes);
 
 
 int main(int argc, char* argv[]) {
-    // create permutation sequence
-    double r = 3.812345678;
+
+    // image data
+    int imageH = 5;
+    int imageW = 5;
+    int numberOfImageBytes = imageH*imageW*3;
+    unsigned char imageBytes[] = {
+		215, 59, 230, 206, 50, 221, 209, 53, 224, 213, 57, 228, 205, 52, 222, 201, 48, 218, 191,
+		39, 209, 194, 41, 211, 196, 44, 214, 188, 36, 206, 191, 44, 212, 181, 36, 203, 184, 37,
+		205, 187, 42, 209, 179, 34, 201, 185, 44, 210, 176, 37, 202, 181, 40, 206, 185, 46, 211,
+		180, 39, 205, 178, 43, 207, 168, 36, 199, 176, 41, 205, 179, 47, 210, 176, 41, 205
+    };
+
+    // controll parameter
+    double r = 3.812345678; // 3.6 <= r <= 4.0
     double x = 0.345678914;
 
     int sequenceLength = 30;
     int permutationSequence[sequenceLength];
 
+    // 1. generate controll parameter based on image
+    r = generateControlParameters(r, imageBytes, numberOfImageBytes);
+    PTF("\n-------------\nr = %.15f\n", r);
+
+    // 2. create permutation = fill permutation array
     createPermutationSequence(permutationSequence, r, x, sequenceLength);
 
-    // generate control parameter
 
 
+}
 
+double generateControlParameters(double basicR, unsigned char imageBytes[], int numberOfImageBytes) {
+    long sumOfAllImageBytes = 0;
+    double avg = 0;
+    double r = 0.0;
 
-	return 0;
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        sumOfAllImageBytes += imageBytes[i];
+    }
+
+    PTF("Sum of bytes = %ld\n", sumOfAllImageBytes);
+
+    avg = ((double)sumOfAllImageBytes) / (double)(numberOfImageBytes * 63 * 10);
+    PTF("Average = %.15f\n", avg);
+
+    if(numberOfImageBytes <= 1000000)
+        r = (basicR+0.0)+(0.4-avg);
+    else if(numberOfImageBytes > 1000000 && numberOfImageBytes <= 4000000)
+        r = (basicR+0.1)+(0.4-avg);
+    else if(numberOfImageBytes > 4000000)
+        r = (basicR+0.2)+(0.4-avg);
+
+	return r;
 }
 
 void createPermutationSequence(int permutationSequence[], double r, double x, int sequenceLength) {
