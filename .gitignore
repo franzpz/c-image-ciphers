@@ -2,6 +2,7 @@
 *.d
 
 *.out
+imagecipher1/bin/
 
 # Object files
 *.o
