@@ -10,12 +10,24 @@ void bubbleSort(double a[], int n);
 int calcGroupNumber(double t);
 int find(double array[], double data, int length);
 
+void createPermutationSequence(int permutationSequence[], double r, double x, int sequenceLength);
+
 int main(int argc, char* argv[]) {
     double r = 3.812345678;
     double x = 0.345678914;
 
     int sequenceLength = 30;
-    double sequenceC[sequenceLength]; 
+    int permutationSequence[sequenceLength];
+
+    createPermutationSequence(permutationSequence, r, x, sequenceLength);
+
+
+
+	return 0;
+}
+
+void createPermutationSequence(int permutationSequence[], double r, double x, int sequenceLength) {
+    double sequenceC[sequenceLength];
     double sequenceS[sequenceLength];
     double xn = x;
 
@@ -65,9 +77,8 @@ int main(int argc, char* argv[]) {
     }
 
     // create permuation sequence
-    int permuationSequence[sequenceLength];
     for(int i = 0; i < sequenceLength; i++) {
-        permuationSequence[i] = -1;
+        permutationSequence[i] = -1;
     }
 
     int permutationIndex = 0;
@@ -77,18 +88,16 @@ int main(int argc, char* argv[]) {
 
         int j = 0;
         while(groupedArrays[i][j] > 0) {
-            permuationSequence[permutationIndex++] = find(sequenceS, groupedArrays[i][j], sequenceLength);
+            permutationSequence[permutationIndex++] = find(sequenceS, groupedArrays[i][j], sequenceLength);
             j++;
         }
     }
 
     printf("\nPermutation Sequence: \n");
     for(int i = 0; i < sequenceLength; i++) {
-        printf("%d - %d\n", i, permuationSequence[i]);
+        printf("%d - %d\n", i, permutationSequence[i]);
     }
     printf("-------------------\n");
-
-	return 0;
 }
 
 int calcGroupNumber(double t) {
@@ -101,7 +110,7 @@ int calcGroupNumber(double t) {
         return result1-result2;
     if(result2 >= result1)
         return result2-result1;
-    
+
     return 0;
 }
 
@@ -137,9 +146,9 @@ int find(double array[], double data, int length) {
    int lowerBound = 0;
    int upperBound = length -1;
    int midPoint = -1;
-   int comparisons = 0;      
+   int comparisons = 0;
    int index = -1;
-	
+
    while(lowerBound <= upperBound) {
       printf("Comparison %d\n" , (comparisons +1) );
       printf("lowerBound : %d, array[%d] = %.15f\n",lowerBound,lowerBound,
@@ -147,27 +156,27 @@ int find(double array[], double data, int length) {
       printf("upperBound : %d, array[%d] = %.15f\n",upperBound,upperBound,
          array[upperBound]);
       comparisons++;
-		
+
       // compute the mid point
       // midPoint = (lowerBound + upperBound) / 2;
-      midPoint = lowerBound + (upperBound - lowerBound) / 2;	
-		
+      midPoint = lowerBound + (upperBound - lowerBound) / 2;
+
       // data found
       if(array[midPoint] == data) {
          index = midPoint;
          break;
       } else {
-         // if data is larger 
+         // if data is larger
          if(array[midPoint] < data) {
             // data is in upper half
             lowerBound = midPoint + 1;
          }
-         // data is smaller 
+         // data is smaller
          else {
-            // data is in lower half 
+            // data is in lower half
             upperBound = midPoint -1;
          }
-      }               
+      }
    }
    printf("Total comparisons made: %d" , comparisons);
    return index;
