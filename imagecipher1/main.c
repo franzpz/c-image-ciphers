@@ -3,6 +3,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include "debug.h"
+
+#ifdef DEV
+    #define PTF(A,...) printf(A,##__VA_ARGS__);
+#else
+    #define PTF(A,...) do {} while(0);
+#endif
 
 void printSequence(double a[], int n);
 void copyArray(double source[], double dest[], int n);
@@ -12,7 +19,9 @@ int find(double array[], double data, int length);
 
 void createPermutationSequence(int permutationSequence[], double r, double x, int sequenceLength);
 
+
 int main(int argc, char* argv[]) {
+    // create permutation sequence
     double r = 3.812345678;
     double x = 0.345678914;
 
@@ -20,6 +29,9 @@ int main(int argc, char* argv[]) {
     int permutationSequence[sequenceLength];
 
     createPermutationSequence(permutationSequence, r, x, sequenceLength);
+
+    // generate control parameter
+
 
 
 
@@ -39,7 +51,7 @@ void createPermutationSequence(int permutationSequence[], double r, double x, in
             sequenceC[i-transientResultsToSkip] = xn;
     }
 
-    printf("original sequence C\n");
+    PTF("original sequence C\n");
     printSequence(sequenceC, 10);
 
     // create sorted sequence S based on sequence C
@@ -47,7 +59,7 @@ void createPermutationSequence(int permutationSequence[], double r, double x, in
 
     bubbleSort(sequenceS, sequenceLength);
 
-    printf("sorted sequence S\n");
+    PTF("sorted sequence S\n");
     printSequence(sequenceS, 10);
 
     // better allocation (use malloc)
@@ -70,7 +82,7 @@ void createPermutationSequence(int permutationSequence[], double r, double x, in
 
         int result = calcGroupNumber(sequenceS[i]);
         if(result < 0 || result > 9)
-            return -1;
+            return;
 
         //printf("result = %d writing to grouped Array number %d lastGroupArrayPosition = %d, value = %.15f\n\n", result, result,lastGroupedArrayPosition[result], sequenceS[i]);
         groupedArrays[result][lastGroupedArrayPosition[result]++] = sequenceS[i];
@@ -93,11 +105,11 @@ void createPermutationSequence(int permutationSequence[], double r, double x, in
         }
     }
 
-    printf("\nPermutation Sequence: \n");
+    PTF("\nPermutation Sequence: \n");
     for(int i = 0; i < sequenceLength; i++) {
-        printf("%d - %d\n", i, permutationSequence[i]);
+        PTF("%d - %d\n", i, permutationSequence[i]);
     }
-    printf("-------------------\n");
+    PTF("-------------------\n");
 }
 
 int calcGroupNumber(double t) {
@@ -115,10 +127,12 @@ int calcGroupNumber(double t) {
 }
 
 void printSequence(double a[], int n) {
+    #ifdef DEV
     for(int i = 0; i < n; i++) {
-        printf("%d - %.15f\n", i, a[i]);
+        PTF("%d - %.15f\n", i, a[i]);
     }
-    printf("-------------------\n");
+    PTF("-------------------\n");
+    #endif
 }
 
 void copyArray(double source[], double dest[], int n){
@@ -150,10 +164,10 @@ int find(double array[], double data, int length) {
    int index = -1;
 
    while(lowerBound <= upperBound) {
-      printf("Comparison %d\n" , (comparisons +1) );
-      printf("lowerBound : %d, array[%d] = %.15f\n",lowerBound,lowerBound,
+      PTF("Comparison %d\n" , (comparisons +1) );
+      PTF("lowerBound : %d, array[%d] = %.15f\n",lowerBound,lowerBound,
          array[lowerBound]);
-      printf("upperBound : %d, array[%d] = %.15f\n",upperBound,upperBound,
+      PTF("upperBound : %d, array[%d] = %.15f\n",upperBound,upperBound,
          array[upperBound]);
       comparisons++;
 
@@ -178,6 +192,6 @@ int find(double array[], double data, int length) {
          }
       }
    }
-   printf("Total comparisons made: %d" , comparisons);
+   PTF("Total comparisons made: %d" , comparisons);
    return index;
 }
