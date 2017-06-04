@@ -44,20 +44,29 @@ double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, i
 
 int main(int argc, char* argv[]) {
 
+    /*argv[1] = "../../5x5image.jpgbytes.txt\0";
+    argv[2] = "75";
+    argc = 3;*/
+
     int maxFilePathLength = 100;
 
+    if(argc < 3)
+        return -1;
+
     char filePath[maxFilePathLength];
+    //char *filePath = "../../5x5image.jpgbytes.txt";
+
     if (strlen(argv[1]) >= maxFilePathLength)
         fprintf(stderr, "%s is too long!\n", argv[1]);
     else
         strcpy(filePath, argv[1]);
 
-    PTF("\nusing file: %s\n", filePath);
+    PTF_IMPT("\nusing file: %s\n", filePath);
 
     int numberOfImageBytes;
     sscanf (argv[2],"%d",&numberOfImageBytes);
 
-    PTF("\nnumber of bytes: %d\n", numberOfImageBytes);
+    PTF_IMPT("\nnumber of bytes: %d\n", numberOfImageBytes);
 
     FILE *myFile;
     myFile = fopen(filePath, "r");
@@ -70,6 +79,8 @@ int main(int argc, char* argv[]) {
     {
         fscanf(myFile, "%d", &imageBytes[i]);
     }
+
+    free(myFile);
 
     #ifdef DEV
     PTF("\n------- Number is: [");
@@ -104,16 +115,26 @@ int main(int argc, char* argv[]) {
     */
 
     encrypt(imageBytes, numberOfImageBytes);
- /*
-    printf("\n------- Number is: [");
+
+    char encryptedSuffix[] = ".encrypted";
+    strcat(filePath, encryptedSuffix);
+    PTF_IMPT("new filename = %s\n", filePath);
+
+    FILE *encryptedImageBytes = fopen(filePath, "w");
     for (i = 0; i < numberOfImageBytes; i++)
     {
-        printf("%u, ", imageBytes[i]);
+        fprintf(encryptedImageBytes, "%u ", imageBytes[i]);
     }
-    printf("] -------- \n");
-    */
+    fclose(encryptedImageBytes);
+    /*
+    for (i = 0; i < numberOfImageBytes; i++)
+    {
+        fprintf(encryptedImageBytes, "%u ", imageBytes[i]);
+    }
 
-    free(myFile);
+
+    */
+    return 0;
 }
 
 void encrypt(unsigned char imageBytes[], int numberOfImageBytes) {
