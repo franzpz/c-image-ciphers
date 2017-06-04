@@ -18,7 +18,8 @@ int calcGroupNumber(double t);
 int find(double array[], double data, int length);
 
 void createPermutationSequence(int permutationSequence[], double r, double x, int sequenceLength);
-double generateControlParameters(double basicR, unsigned char imageBytes[], int numberOfImageBytes);
+double generateControlParametersLogisticMap(double basicR, double avgOfImageByteSum, int numberOfImageBytes);
+double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, int numberOfImageBytes);
 
 
 int main(int argc, char* argv[]) {
@@ -36,27 +37,20 @@ int main(int argc, char* argv[]) {
 
     // controll parameter
     double r = 3.812345678; // 3.6 <= r <= 4.0
-    double x = 0.345678914;
+    double xPermutation = 0.345678914; // 0 < x < 1
 
-    int sequenceLength = 30;
-    int permutationSequence[sequenceLength];
-
-    // 1. generate controll parameter based on image
-    r = generateControlParameters(r, imageBytes, numberOfImageBytes);
-    PTF("\n-------------\nr = %.15f\n", r);
-
-    // 2. create permutation = fill permutation array
-    createPermutationSequence(permutationSequence, r, x, sequenceLength);
+    double miuDiffusion = 0.60122344; // 0.6 < miu <= 1.0
+    double yDiffusion = 0.600030404055; // 0 < y < 1
+    double xDiffusion = 0.9523456; // 0 < x < 1
 
 
 
-}
+    int permutationSequenceLogisticMap[numberOfImageBytes];
+    unsigned char mDiffusionSequenceOne[numberOfImageBytes];
+    unsigned char mDiffusionSequenceTwo[numberOfImageBytes];
 
-double generateControlParameters(double basicR, unsigned char imageBytes[], int numberOfImageBytes) {
     long sumOfAllImageBytes = 0;
     double avg = 0;
-    double r = 0.0;
-
     for(int i = 0; i < numberOfImageBytes; i++) {
         sumOfAllImageBytes += imageBytes[i];
     }
@@ -65,13 +59,86 @@ double generateControlParameters(double basicR, unsigned char imageBytes[], int 
 
     avg = ((double)sumOfAllImageBytes) / (double)(numberOfImageBytes * 63 * 10);
     PTF("Average = %.15f\n", avg);
+    /*
+    // 1. generate control parameters for logistic map based on image
+    r = generateControlParametersLogisticMap(r, avg, numberOfImageBytes);
+    PTF("\n-------------\nr = %.15f\n", r);
+
+    // 2. create permutation = fill permutation array
+    createPermutationSequence(permutationSequenceLogisticMap, r, x, numberOfImageBytes);
+    */
+    // 3. generate control parameters for ikeda map based on image
+    miuDiffusion = generateControlParametersIkedaMap(miuDiffusion, avg, numberOfImageBytes);
+
+    // 4. create ikeda map diffusion sequence
+    createDiffusionSequenceIkedaMap(miuDiffusion, xDiffusion, mDiffusionSequenceOne, mDiffusionSequenceTwo, numberOfImageBytes);
+
+
+}
+
+void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], int sequenceLength){
+    int entriesToSkip = 1000;
+    double multiply = pow(10.0, 16);
+    double absX;
+    double absY;
+    double xn = x;
+    double yn = y;
+    double tn;
+    double cosT;
+    double sinT;
+
+    // initialize empty sequences
+    for(int i = 0; i < sequenceLength; i++) {
+        mOneSequence[i] = -1;
+        mTwoSequence[i] = -1;
+    }
+
+    PTF("--------- Creating Diffusion Sequence ---------\n")
+
+    // calculate chaotic map sequences
+    for(int i = 0; i < entriesToSkip + sequenceLength; i++) {
+        tn = 0.4 - (6.0 / (1.0 + xn*xn + yn*yn));
+
+        cosT = cos(tn);
+        sinT = sin(tn);
+
+        xn = 1.0 + miu * ((xn * cosT) - (yn * sinT));
+        yn = miu * ((xn * sinT) - (yn * cosT));
+
+        if(i >= entriesToSkip) {
+            absX = fabs(xn);
+            absY = fabs(yn);
+            mOneSequence[i-entriesToSkip] = ((long long)((absX - ((double)floor(absX))) * multiply)) % 255;
+            mTwoSequence[i-entriesToSkip] = ((long long)((absY - ((double)floor(absY))) * multiply)) % 255;
+
+            PTF("%d - xn: %.20f yn: %.20f m1: %d\n", i, xn, yn, mOneSequence[i-entriesToSkip]);
+            PTF("%d - xn: %.20f yn: %.20f m1: %d\n", i, xn, yn, mTwoSequence[i-entriesToSkip]);
+        }
+    }
+}
+
+double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, int numberOfImageBytes) {
+    double r = 0.0;
 
     if(numberOfImageBytes <= 1000000)
-        r = (basicR+0.0)+(0.4-avg);
+        r = (miu+0.0)+(1.0-avgOfImageByteSum)/2;
     else if(numberOfImageBytes > 1000000 && numberOfImageBytes <= 4000000)
-        r = (basicR+0.1)+(0.4-avg);
+        r = (miu+0.1)+(1.0-avgOfImageByteSum)/2;
     else if(numberOfImageBytes > 4000000)
-        r = (basicR+0.2)+(0.4-avg);
+        r = (miu+0.2)+(1.0-avgOfImageByteSum)/2;
+
+	return r;
+}
+
+double generateControlParametersLogisticMap(double basicR, double avgOfImageByteSum, int numberOfImageBytes) {
+    double r = 0.0;
+
+    if(numberOfImageBytes <= 1000000)
+        r = (basicR+0.0)+(0.4-avgOfImageByteSum);
+    else if(numberOfImageBytes > 1000000 && numberOfImageBytes <= 4000000)
+        r = (basicR+0.1)+(0.4-avgOfImageByteSum);
+    else if(numberOfImageBytes > 4000000)
+        r = (basicR+0.2)+(0.4-avgOfImageByteSum);
 
 	return r;
 }
