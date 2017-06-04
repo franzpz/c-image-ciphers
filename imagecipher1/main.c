@@ -19,6 +19,9 @@
     #define PTF_IMPT(A,...) do {} while(0);
 #endif
 
+static int ENC_MODE = 1;
+static int DEC_MODE = 2;
+
 typedef struct PermutationSetups {
     double r; // 3.6 <= r <= 4.0
     double x; // 0 < x < 1
@@ -30,7 +33,7 @@ typedef struct DiffusionSetups {
     double x; // 0 < x < 1
 } DiffusionSetup;
 
-void encrypt(unsigned char imageBytes[], int numberOfImageBytes);
+void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes);
 
 void printSequence(double a[], int n);
 void copyArray(double source[], double dest[], int n);
@@ -40,13 +43,14 @@ int find(double array[], double data, int length);
 
 void createPermutationSequence(int permutationSequence[], double r, double x, int sequenceLength);
 double generateControlParametersLogisticMap(double basicR, double avgOfImageByteSum, int numberOfImageBytes);
+void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], int sequenceLength);
 double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, int numberOfImageBytes);
 
 int main(int argc, char* argv[]) {
 
     /*argv[1] = "../../5x5image.jpgbytes.txt\0";
     argv[2] = "75";
-    argc = 3;*/
+    argc = 3;
 
     int maxFilePathLength = 100;
 
@@ -81,7 +85,7 @@ int main(int argc, char* argv[]) {
     }
 
     free(myFile);
-
+*/
     #ifdef DEV
     PTF("\n------- Number is: [");
     for (i = 0; i < numberOfImageBytes; i++)
@@ -91,18 +95,28 @@ int main(int argc, char* argv[]) {
     PTF("] -------- \n");
     #endif // DEV
 
-    /*
+    /**/
     // image data
     int imageH = 5;
     int imageW = 5;
     int numberOfImageBytes = imageH*imageW*3;
-    unsigned char imageBytes[] = {
+    int mode = DEC_MODE;
+ /*   unsigned char imageBytes[] = {
 		215, 59, 230, 206, 50, 221, 209, 53, 224, 213, 57, 228, 205, 52, 222, 201, 48, 218, 191,
 		39, 209, 194, 41, 211, 196, 44, 214, 188, 36, 206, 191, 44, 212, 181, 36, 203, 184, 37,
 		205, 187, 42, 209, 179, 34, 201, 185, 44, 210, 176, 37, 202, 181, 40, 206, 185, 46, 211,
 		180, 39, 205, 178, 43, 207, 168, 36, 199, 176, 41, 205, 179, 47, 210, 176, 41, 205
+    };*/
+
+    unsigned char imageBytes[] = {
+        47, 205, 43, 201, 194, 36, 53, 181, 230, 205, 205, 199, 228, 224, 211, 207, 39, 209, 36,
+        212, 41, 34, 44, 209, 201, 176, 205, 221, 209, 48, 215, 37, 179, 44, 187, 41, 179, 210,
+        191, 40, 211, 181, 176, 59, 52, 184, 42, 206, 176, 180, 37, 188, 202, 210, 178, 44, 206,
+        36, 57, 203, 41, 214, 191, 39, 168, 46, 185, 222, 206, 205, 185, 196, 50, 213, 218
     };
-    */
+
+
+
 
     // controll parameter
     /*
@@ -112,10 +126,10 @@ int main(int argc, char* argv[]) {
     double miuDiffusion = 0.60122344; // 0.6 < miu <= 1.0
     double yDiffusion = 0.600030404055; // 0 < y < 1
     double xDiffusion = 0.9523456; // 0 < x < 1
-    */
+*/
 
-    encrypt(imageBytes, numberOfImageBytes);
-
+    runAlgorithm(mode, imageBytes, numberOfImageBytes);
+/*
     char encryptedSuffix[] = ".encrypted";
     strcat(filePath, encryptedSuffix);
     PTF_IMPT("new filename = %s\n", filePath);
@@ -125,19 +139,12 @@ int main(int argc, char* argv[]) {
     {
         fprintf(encryptedImageBytes, "%u ", imageBytes[i]);
     }
-    fclose(encryptedImageBytes);
-    /*
-    for (i = 0; i < numberOfImageBytes; i++)
-    {
-        fprintf(encryptedImageBytes, "%u ", imageBytes[i]);
-    }
+    fclose(encryptedImageBytes);*/
 
-
-    */
     return 0;
 }
 
-void encrypt(unsigned char imageBytes[], int numberOfImageBytes) {
+void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes) {
 
     #ifdef TEST
     PTF_IMPT("\n----------- original Image [");
@@ -239,22 +246,13 @@ void encrypt(unsigned char imageBytes[], int numberOfImageBytes) {
         #endif
     }
 
-    unsigned char tmpImageBytes[numberOfImageBytes];
-
-    // 5. Encryption rounds
-    for(int i = 0; i < encryptionRounds; i++) {
-
-        for(int k = 0; k < 4; k++) {
-            // 1. shuffle
-            for(int j = 0; j < numberOfImageBytes; j++) {
-                tmpImageBytes[j] = imageBytes[permutationSequenceLogisticMap[k][j]];
-            }
-
-            // 2. xor 1
-            for(int j = 0; j < numberOfImageBytes; j++) {
-                imageBytes[j] = tmpImageBytes[j]^diffustionSequenceIkedaMap[k][j];
-            }
-        }
+    if(mode == ENC_MODE) {
+        // 5. Encryption rounds
+        encrypt(numberOfImageBytes, permutationSequenceLogisticMap, diffustionSequenceIkedaMap, imageBytes, encryptionRounds);
+    }
+    else if(mode == DEC_MODE) {
+        // 4. decryption rounds
+        decrypt(numberOfImageBytes, permutationSequenceLogisticMap, diffustionSequenceIkedaMap, imageBytes, encryptionRounds);
     }
 
     #ifdef TEST
@@ -264,6 +262,46 @@ void encrypt(unsigned char imageBytes[], int numberOfImageBytes) {
     }
     PTF_IMPT("] -------------------\n");
     #endif
+}
+
+void decrypt(int numberOfBytes, int permutationSeqs[4][numberOfBytes], unsigned char diffustionSeqs[4][numberOfBytes], unsigned char imageBytes[numberOfBytes],int rounds) {
+
+    unsigned char tmpImageBytes[numberOfBytes];
+
+    for(int i = 0; i < rounds; i++) {
+
+        for(int k = 3; k >= 0; k++) {
+
+            for(int j = 0; j < numberOfBytes; j++) {
+                tmpImageBytes[j] = imageBytes[j]^diffustionSeqs[k][j];
+            }
+
+            // 1. shuffle
+            for(int j = 0; j < numberOfBytes; j++) {
+                imageBytes[permutationSeqs[k][j]] = tmpImageBytes[j];
+            }
+        }
+    }
+}
+
+void encrypt(int numberOfBytes, int permutationSeqs[4][numberOfBytes], unsigned char diffustionSeqs[4][numberOfBytes], unsigned char imageBytes[numberOfBytes],int rounds) {
+
+    unsigned char tmpImageBytes[numberOfBytes];
+
+    for(int i = 0; i < rounds; i++) {
+
+        for(int k = 0; k < 4; k++) {
+            // 1. shuffle
+            for(int j = 0; j < numberOfBytes; j++) {
+                tmpImageBytes[j] = imageBytes[permutationSeqs[k][j]];
+            }
+
+            // 2. xor 1
+            for(int j = 0; j < numberOfBytes; j++) {
+                imageBytes[j] = tmpImageBytes[j]^diffustionSeqs[k][j];
+            }
+        }
+    }
 }
 
 void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], int sequenceLength){
