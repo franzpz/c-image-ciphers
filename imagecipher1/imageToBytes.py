@@ -1,7 +1,8 @@
 from PIL import Image
 import sys
 
-image = Image.open(str(sys.argv[1]))
+filename = str(sys.argv[1])
+image = Image.open(filename)
 pix = image.load()
 
 x = 0
@@ -18,3 +19,10 @@ for y in range(0, image.size[0]):
 print "size of image"
 print len(imagePixelValues)
 print imagePixelValues
+
+thefile = open(filename + 'bytes.txt', 'w')
+
+for val in imagePixelValues:
+  thefile.write("%d " % val)
+
+thefile.close();

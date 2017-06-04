@@ -3,12 +3,20 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include "debug.h"
+
+//#define DEV 1
+#define TEST 1
 
 #ifdef DEV
     #define PTF(A,...) printf(A,##__VA_ARGS__);
 #else
     #define PTF(A,...) do {} while(0);
+#endif
+
+#ifdef TEST
+    #define PTF_IMPT(A,...) printf(A,##__VA_ARGS__);
+#else
+    #define PTF_IMPT(A,...) do {} while(0);
 #endif
 
 typedef struct PermutationSetups {
@@ -22,7 +30,7 @@ typedef struct DiffusionSetups {
     double x; // 0 < x < 1
 } DiffusionSetup;
 
-void encrypt(unsigned char imageBytes[], unsigned char encryptedBytes[], int numberOfImageBytes);
+void encrypt(unsigned char imageBytes[], int numberOfImageBytes);
 
 void printSequence(double a[], int n);
 void copyArray(double source[], double dest[], int n);
@@ -34,9 +42,45 @@ void createPermutationSequence(int permutationSequence[], double r, double x, in
 double generateControlParametersLogisticMap(double basicR, double avgOfImageByteSum, int numberOfImageBytes);
 double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, int numberOfImageBytes);
 
-
 int main(int argc, char* argv[]) {
 
+    int maxFilePathLength = 100;
+
+    char filePath[maxFilePathLength];
+    if (strlen(argv[1]) >= maxFilePathLength)
+        fprintf(stderr, "%s is too long!\n", argv[1]);
+    else
+        strcpy(filePath, argv[1]);
+
+    PTF("\nusing file: %s\n", filePath);
+
+    int numberOfImageBytes;
+    sscanf (argv[2],"%d",&numberOfImageBytes);
+
+    PTF("\nnumber of bytes: %d\n", numberOfImageBytes);
+
+    FILE *myFile;
+    myFile = fopen(filePath, "r");
+
+    //read file into array
+    unsigned char imageBytes[numberOfImageBytes];
+    int i;
+
+    for (i = 0; i < numberOfImageBytes; i++)
+    {
+        fscanf(myFile, "%d", &imageBytes[i]);
+    }
+
+    #ifdef DEV
+    PTF("\n------- Number is: [");
+    for (i = 0; i < numberOfImageBytes; i++)
+    {
+        PTF("%d, ", imageBytes[i]);
+    }
+    PTF("] -------- \n");
+    #endif // DEV
+
+    /*
     // image data
     int imageH = 5;
     int imageW = 5;
@@ -47,9 +91,7 @@ int main(int argc, char* argv[]) {
 		205, 187, 42, 209, 179, 34, 201, 185, 44, 210, 176, 37, 202, 181, 40, 206, 185, 46, 211,
 		180, 39, 205, 178, 43, 207, 168, 36, 199, 176, 41, 205, 179, 47, 210, 176, 41, 205
     };
-
-    FILE *myFile;
-    myFile = fopen(argv[1], "r");
+    */
 
     // controll parameter
     /*
@@ -61,137 +103,29 @@ int main(int argc, char* argv[]) {
     double xDiffusion = 0.9523456; // 0 < x < 1
     */
 
-    PermutationSetup permSetups[4];
-
-    permSetups[0].r = 3.6000000001;
-    permSetups[0].x = 0.8000000001;
-
-    permSetups[1].r = 3.6000000002;
-    permSetups[1].x = 0.8000000002;
-
-    permSetups[2].r = 3.6000000003;
-    permSetups[2].x = 0.8000000003;
-
-    permSetups[3].r = 3.6000000004;
-    permSetups[3].x = 0.8000000004;
-
-    DiffusionSetup diffuSetups[2];
-
-    diffuSetups[0].miu = 0.60000000001;
-    diffuSetups[0].x = 0.35000000001;
-    diffuSetups[0].y = 0.35000000002;
-
-    diffuSetups[1].miu = 0.60000000002;
-    diffuSetups[1].x = 0.36000000001;
-    diffuSetups[1].y = 0.36000000002;
-
-    int encryptionRounds = 10;
-
-    int permutationSequenceLogisticMap[4][numberOfImageBytes];
-    unsigned char diffustionSequenceIkedaMap[4][numberOfImageBytes];
-
-    long sumOfAllImageBytes = 0;
-    double avg = 0;
-    for(int i = 0; i < numberOfImageBytes; i++) {
-        sumOfAllImageBytes += imageBytes[i];
+    encrypt(imageBytes, numberOfImageBytes);
+ /*
+    printf("\n------- Number is: [");
+    for (i = 0; i < numberOfImageBytes; i++)
+    {
+        printf("%u, ", imageBytes[i]);
     }
-
-    PTF("Sum of bytes = %ld\n", sumOfAllImageBytes);
-
-    avg = ((double)sumOfAllImageBytes) / (double)(numberOfImageBytes * 63 * 10);
-    PTF("Average = %.15f\n", avg);
-
-    // 1. generate control parameters for logistic map based on image
-    PTF("\n-------------Permutation Parameters\n");
-    for(int i = 0; i < 4; i++) {
-        permSetups[i].r = generateControlParametersLogisticMap(permSetups[i].r, avg, numberOfImageBytes);
-        PTF("r%d = %.15f\n", i, permSetups[i].r);
-    }
-    PTF("-------------\n");
-
-    // 2. create permutation = fill permutation array
-    PTF("\n-------------Permutation Sequences \n");
-    for(int i = 0; i < 4; i++) {
-        createPermutationSequence(permutationSequenceLogisticMap[i], permSetups[i].r, permSetups[i].x, numberOfImageBytes);
-
-        #ifdef DEV
-        PTF("\nPermutation Sequence %d: \n", i);
-        for(int j = 0; j < 10; j++) {
-            PTF("%d - %d\n", j, permutationSequenceLogisticMap[i][j]);
-        }
-        PTF("-------------------\n");
-        #endif
-    }
-
-
-    // 3. generate control parameters for ikeda map based on image
-    PTF("\n-------------Diffustion Parameters\n");
-    for(int i = 0; i < 2; i++) {
-        diffuSetups[i].miu = generateControlParametersLogisticMap(diffuSetups[i].miu, avg, numberOfImageBytes);
-        PTF("miu%d = %.15f\n", i, diffuSetups[i].miu);
-    }
-    PTF("-------------\n");
-
-
-    // 4. create ikeda map diffusion sequence
-    PTF("\n-------------Diffustion Sequences \n");
-    for(int i = 0; i < 2; i++) {
-        createDiffusionSequenceIkedaMap(diffuSetups[i].miu, diffuSetups[i].x, diffuSetups[i].y, diffustionSequenceIkedaMap[i*2], diffustionSequenceIkedaMap[(i*2)+1], numberOfImageBytes);
-
-        #ifdef DEV
-        PTF("\nDiffusion Sequence %d: \n", i*2);
-        for(int j = 0; j < 10; j++) {
-            PTF("%d - %d\n", j, diffustionSequenceIkedaMap[i*2][j]);
-        }
-        PTF("-------------------\n");
-
-        PTF("\nDiffusion Sequence %d: \n", (i*2)+1);
-        for(int j = 0; j < 10; j++) {
-            PTF("%d - %d\n", j, diffustionSequenceIkedaMap[(i*2)+1][j]);
-        }
-        PTF("-------------------\n");
-        #endif
-    }
-
-    unsigned char tmpImageBytes[numberOfImageBytes];
-
-    // 5. Encryption rounds
-    for(int i = 0; i < encryptionRounds; i++) {
-
-        for(int k = 0; k < 4; k++) {
-            // 1. shuffle
-            for(int j = 0; j < numberOfImageBytes; j++) {
-                tmpImageBytes[j] = imageBytes[permutationSequenceLogisticMap[k][j]];
-            }
-
-            // 2. xor 1
-            for(int j = 0; j < numberOfImageBytes; j++) {
-                imageBytes[j] = tmpImageBytes[j]^diffustionSequenceIkedaMap[k][j];
-            }
-        }
-    }
-
-    #ifdef DEV
-    PTF("\n----------- encrypted Image [");
-    for(int j = 0; j < numberOfImageBytes; j++) {
-        PTF("%d, ", j, imageBytes[j]);
-    }
-    PTF("] -------------------\n");
-    #endif
-
-    /*
-    #ifdef DEV
-    PTF("\n-------------------\n")
-    for(int i = 0; i < numberOfImageBytes; i++)
-        PTF("%d - one: %d, two %d\n", i, mDiffusionSequenceOne[i], mDiffusionSequenceTwo[i]);
-    PTF("\n-------------------\n")
-    #endif
-
+    printf("] -------- \n");
     */
+
+    free(myFile);
 }
 
 void encrypt(unsigned char imageBytes[], int numberOfImageBytes) {
 
+    #ifdef TEST
+    PTF_IMPT("\n----------- original Image [");
+    for(int j = 0; j < numberOfImageBytes; j++) {
+        PTF_IMPT("%u, ", imageBytes[j]);
+    }
+    PTF_IMPT("] -------------------\n");
+    #endif
+
     PermutationSetup permSetups[4];
 
     permSetups[0].r = 3.6000000001;
@@ -302,12 +236,12 @@ void encrypt(unsigned char imageBytes[], int numberOfImageBytes) {
         }
     }
 
-    #ifdef DEV
-    PTF("\n----------- encrypted Image [");
+    #ifdef TEST
+    PTF_IMPT("\n----------- encrypted Image [");
     for(int j = 0; j < numberOfImageBytes; j++) {
-        PTF("%d, ", j, imageBytes[j]);
+        PTF_IMPT("%u, ", imageBytes[j]);
     }
-    PTF("] -------------------\n");
+    PTF_IMPT("] -------------------\n");
     #endif
 }
 
