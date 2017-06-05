@@ -5,13 +5,8 @@
 #include "imagecipher1.h"
 
 void printSequence(double a[], int n);
-void copyArray(double source[], double dest[], int n);
-void bubbleSort(double a[], int n);
-int calcGroupNumber(double t);
+void sort(double a[], int n);
 int find(double array[], double data, int length);
-
-void decrypt(int numberOfBytes, int permutationSeqs[4][numberOfBytes], unsigned char diffustionSeqs[4][numberOfBytes], unsigned char imageBytes[numberOfBytes],int rounds);
-void encrypt(int numberOfBytes, int permutationSeqs[4][numberOfBytes], unsigned char diffustionSeqs[4][numberOfBytes], unsigned char imageBytes[numberOfBytes],int rounds);
 
 void createPermutationSequence(int permutationSequence[], double r, double x, int sequenceLength);
 double generateControlParametersLogisticMap(double basicR, double avgOfImageByteSum, int numberOfImageBytes);
@@ -125,11 +120,44 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, 
 
     if(mode == ENC_MODE) {
         // 5. Encryption rounds
-        encrypt(numberOfImageBytes, permutationSequenceLogisticMap, diffustionSequenceIkedaMap, imageBytes, encryptionRounds);
+        unsigned char tmpImageBytes[numberOfImageBytes];
+        memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
+
+        int k, j;
+        for(int i = 0; i < encryptionRounds; i++) {
+
+            for(k = 0; k < 4; k++) {
+                PTF("\n----------- round %d after permutation %d and diffustion %d [", i, k, k);
+                for(j = 0; j < numberOfImageBytes; j++) {
+                    imageBytes[j] = tmpImageBytes[permutationSequenceLogisticMap[k][j]]^diffustionSequenceIkedaMap[k][j];
+                    PTF("%u, ", imageBytes[j]);
+                }
+                PTF("] \n");
+
+                memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
+            }
+        }
     }
     else if(mode == DEC_MODE) {
-        // 4. decryption rounds
-        decrypt(numberOfImageBytes, permutationSequenceLogisticMap, diffustionSequenceIkedaMap, imageBytes, encryptionRounds);
+        // 5. decryption rounds
+        unsigned char tmpImageBytes[numberOfImageBytes];
+        memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
+
+        int k, j;
+        for(int i = 0; i < encryptionRounds; i++) {
+
+            for(k = 3; k >= 0; k--) {
+
+                PTF("\n----------- [ORDER NOT RIGHT - optimized] round %d after permutation %d and diffustion %d [", i, k, k);
+                for(j = 0; j < numberOfImageBytes; j++) {
+                    imageBytes[permutationSequenceLogisticMap[k][j]] = tmpImageBytes[j]^diffustionSequenceIkedaMap[k][j];
+                    PTF("%u, ", imageBytes[j]);
+                }
+                PTF("] \n");
+
+                memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
+            }
+        }
     }
 
     #ifdef TEST
@@ -139,58 +167,6 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, 
     }
     PTF_IMPT("] -------------------\n");
     #endif
-}
-
-void decrypt(int numberOfBytes, int permutationSeqs[4][numberOfBytes], unsigned char diffustionSeqs[4][numberOfBytes], unsigned char imageBytes[numberOfBytes],int rounds) {
-
-    unsigned char tmpImageBytes[numberOfBytes];
-
-    for(int i = 0; i < rounds; i++) {
-
-        for(int k = 3; k >= 0; k--) {
-
-            PTF("\n----------- round %d after diffusion %d [", i, k);
-            for(int j = 0; j < numberOfBytes; j++) {
-                tmpImageBytes[j] = imageBytes[j]^diffustionSeqs[k][j];
-                PTF("%u, ", tmpImageBytes[j]);
-            }
-            PTF("] \n");
-
-            PTF("\n----------- after permutation %d [", k);
-            // 1. shuffle
-            for(int j = 0; j < numberOfBytes; j++) {
-                imageBytes[permutationSeqs[k][j]] = tmpImageBytes[j];
-                PTF("%u, ", imageBytes[j]);
-            }
-            PTF("] -------------------\n");
-        }
-    }
-}
-
-void encrypt(int numberOfBytes, int permutationSeqs[4][numberOfBytes], unsigned char diffustionSeqs[4][numberOfBytes], unsigned char imageBytes[numberOfBytes],int rounds) {
-
-    unsigned char tmpImageBytes[numberOfBytes];
-
-    for(int i = 0; i < rounds; i++) {
-
-        for(int k = 0; k < 4; k++) {
-            // 1. shuffle
-            PTF("\n----------- round %d after permutation %d [", i, k);
-            for(int j = 0; j < numberOfBytes; j++) {
-                tmpImageBytes[j] = imageBytes[permutationSeqs[k][j]];
-                PTF("%u, ", tmpImageBytes[j]);
-            }
-            PTF("] \n");
-
-            PTF("\n----------- after diffusion %d [", k);
-            // 2. xor 1
-            for(int j = 0; j < numberOfBytes; j++) {
-                imageBytes[j] = tmpImageBytes[j]^diffustionSeqs[k][j];
-                PTF("%u, ", imageBytes[j]);
-            }
-            PTF("] -------------------\n");
-        }
-    }
 }
 
 void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], int sequenceLength){
@@ -203,12 +179,6 @@ void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned ch
     double tn;
     double cosT;
     double sinT;
-
-    // initialize empty sequences
-    for(int i = 0; i < sequenceLength; i++) {
-        mOneSequence[i] = -1;
-        mTwoSequence[i] = -1;
-    }
 
     PTF("--------- Creating Diffusion Sequence ---------\n")
 
@@ -272,74 +242,70 @@ void createPermutationSequence(int permutationSequence[], double r, double x, in
         if(i >= transientResultsToSkip)
             sequenceC[i-transientResultsToSkip] = xn;
     }
-
+    /*
     PTF("original sequence C\n");
     printSequence(sequenceC, 10);
+    */
 
     // create sorted sequence S based on sequence C
-    copyArray(sequenceC, sequenceS, sequenceLength);
+    memcpy(sequenceS, sequenceC, sequenceLength * sizeof(double));
 
-    bubbleSort(sequenceS, sequenceLength);
+    sort(sequenceS, sequenceLength);
 
+    /*
     PTF("sorted sequence S\n");
     printSequence(sequenceS, 10);
+    */
 
     // better allocation (use malloc)
     double groupedArrays[10][sequenceLength];
     int lastGroupedArrayPosition[10];
 
     // initialize arrays
+    int j;
     for(int i = 0; i < 10; i++) {
         lastGroupedArrayPosition[i] = 0;
 
-        for(int j = 0; j < sequenceLength; j++) {
+        for(j = 0; j < sequenceLength; j++) {
             groupedArrays[i][j] = -1;
         }
     }
 
-    for(int i = 0; i < 10; i++) lastGroupedArrayPosition[i] = 0;
+    // create grouped arrays based on sequence s
+    double tmpTimes;
+    int groupNumber, tmpResult1, tmpResult2;
 
-    // create grouped arrays based on sequence C
     for(int i = 0; i < sequenceLength; i++) {
 
-        int result = calcGroupNumber(sequenceS[i]);
-        if(result < 0 || result > 9)
+        tmpTimes = sequenceS[i]*1000000;
+        // get group number
+        tmpResult1 = (((int)floor(tmpTimes)) % 10);
+        tmpResult2 = (((int)floor(tmpTimes * 1000)) % 10);
+
+        if(tmpResult1 >= tmpResult2)
+            groupNumber = tmpResult1-tmpResult2;
+        if(tmpResult2 >= tmpResult1)
+            groupNumber = tmpResult2-tmpResult1;
+
+        if(groupNumber < 0 || groupNumber > 9)
             return;
 
-        //printf("result = %d writing to grouped Array number %d lastGroupArrayPosition = %d, value = %.15f\n\n", result, result,lastGroupedArrayPosition[result], sequenceS[i]);
-        groupedArrays[result][lastGroupedArrayPosition[result]++] = sequenceS[i];
-    }
-
-    // create permuation sequence
-    for(int i = 0; i < sequenceLength; i++) {
-        permutationSequence[i] = -1;
+        // set value into appropriate group array
+        groupedArrays[groupNumber][lastGroupedArrayPosition[groupNumber]++] = sequenceS[i];
     }
 
     int permutationIndex = 0;
+
     for(int i = 0; i < 10; i++) {
         if(permutationIndex >= sequenceLength)
             break;
 
-        int j = 0;
+        j = 0;
         while(groupedArrays[i][j] > 0) {
             permutationSequence[permutationIndex++] = find(sequenceS, groupedArrays[i][j], sequenceLength);
             j++;
         }
     }
-}
-
-int calcGroupNumber(double t) {
-    double tTimes = t*1000000;
-
-    int result1 = (((int)floor(tTimes)) % 10);
-    int result2 = (((int)floor(tTimes * 1000)) % 10);
-
-    if(result1 >= result2)
-        return result1-result2;
-    if(result2 >= result1)
-        return result2-result1;
-
-    return 0;
 }
 
 void printSequence(double a[], int n) {
@@ -351,25 +317,21 @@ void printSequence(double a[], int n) {
     #endif
 }
 
-void copyArray(double source[], double dest[], int n){
-    for(int i = 0; i < n; i ++)
-        dest[i] = source[i];
-}
+void sort(double array[], int n){
+    int c, d;
+    double t;
 
-void bubbleSort(double a[], int n){
-	for(int i=0; i<n; i++){
-		int swaps=0;
-		for(int j=0; j<n-i-1; j++){
-			if(a[j]>a[j+1]){
-				double t=a[j];
-				a[j]=a[j+1];
-				a[j+1]=t;
-				swaps++;
-			}
-		}
-		if(swaps==0)
-			break;
-	}
+    for (c = 1 ; c <= n - 1; c++) {
+        d = c;
+
+        while ( d > 0 && array[d] < array[d-1]) {
+          t          = array[d];
+          array[d]   = array[d-1];
+          array[d-1] = t;
+
+          d--;
+        }
+    }
 }
 
 int find(double array[], double data, int length) {

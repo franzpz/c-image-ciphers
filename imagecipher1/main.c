@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
     #endif // DEV
 */
     // image data
-
+ /*
     // orig 5x4
     unsigned char imageBytes[] = {
 		215, 59, 230, 206, 50, 221, 209, 53, 224, 213, 57, 228, 205, 52, 222, 201, 48, 218, 191,
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 		180, 39, 205, 178, 43, 207, 168, 36, 199, 176, 41, 205, 179, 47, 210, 176, 41, 205
     };
 
-  /*   enc 5x5 10 rounds
+    enc 5x5 10 rounds
     unsigned char imageBytes[] = {
         47, 205, 43, 201, 194, 36, 53, 181, 230, 205, 205, 199, 228, 224, 211, 207, 39, 209, 36,
         212, 41, 34, 44, 209, 201, 176, 205, 221, 209, 48, 215, 37, 179, 44, 187, 41, 179, 210,
@@ -74,25 +74,25 @@ int main(int argc, char* argv[]) {
     };
 
     */
-/*
+
     // orig 2x3
     unsigned char imageBytes[] = {
         201, 40, 208, 200, 39, 207, 214, 53, 221,
         213, 52, 220, 216, 50, 220, 216, 50, 220
     };
-
+/*
     // enc 2x3 2 rounds
     unsigned char imageBytes[] = {
         241, 197, 171,  77, 121, 26, 101, 155, 186,
         226, 110,   0, 231, 214, 7, 216, 156, 25
     };*/
 
-    int imageH = 5;
-    int imageW = 5;
+    int imageH = 2;
+    int imageW = 3;
     int numberOfImageBytes = imageH*imageW*3;
     int mode = ENC_MODE;
 
-    int encryptionRounds = 10;
+    int encryptionRounds = 2;
 
     // values would have to be based on an key phrase or similar
     PermutationSetup permSetups[4];

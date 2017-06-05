@@ -4,7 +4,7 @@
 #include <math.h>
 
 //#define DEV 1
-#define TEST 1
+//#define TEST 1
 
 #ifdef DEV
     #define PTF(A,...) printf(A,##__VA_ARGS__);
