@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-//#define DEV 1
+#define DEV 1
 #define TEST 1
 
 #ifdef DEV
@@ -85,35 +85,53 @@ int main(int argc, char* argv[]) {
     }
 
     free(myFile);
-*/
+
     #ifdef DEV
     PTF("\n------- Number is: [");
-    for (i = 0; i < numberOfImageBytes; i++)
+    for (int i = 0; i < numberOfImageBytes; i++)
     {
         PTF("%d, ", imageBytes[i]);
     }
     PTF("] -------- \n");
     #endif // DEV
-
+*/
     /**/
     // image data
-    int imageH = 5;
-    int imageW = 5;
+    int imageH = 2;
+    int imageW = 3;
     int numberOfImageBytes = imageH*imageW*3;
     int mode = DEC_MODE;
- /*   unsigned char imageBytes[] = {
+ /* orig 5x4
+    unsigned char imageBytes[] = {
 		215, 59, 230, 206, 50, 221, 209, 53, 224, 213, 57, 228, 205, 52, 222, 201, 48, 218, 191,
 		39, 209, 194, 41, 211, 196, 44, 214, 188, 36, 206, 191, 44, 212, 181, 36, 203, 184, 37,
 		205, 187, 42, 209, 179, 34, 201, 185, 44, 210, 176, 37, 202, 181, 40, 206, 185, 46, 211,
 		180, 39, 205, 178, 43, 207, 168, 36, 199, 176, 41, 205, 179, 47, 210, 176, 41, 205
-    };*/
+    };
 
+    enc 5x5 10 rounds
     unsigned char imageBytes[] = {
         47, 205, 43, 201, 194, 36, 53, 181, 230, 205, 205, 199, 228, 224, 211, 207, 39, 209, 36,
         212, 41, 34, 44, 209, 201, 176, 205, 221, 209, 48, 215, 37, 179, 44, 187, 41, 179, 210,
         191, 40, 211, 181, 176, 59, 52, 184, 42, 206, 176, 180, 37, 188, 202, 210, 178, 44, 206,
         36, 57, 203, 41, 214, 191, 39, 168, 46, 185, 222, 206, 205, 185, 196, 50, 213, 218
     };
+
+    */
+/*
+    // orig 2x3
+    unsigned char imageBytes[] = {
+        201, 40, 208, 200, 39, 207, 214, 53, 221,
+        213, 52, 220, 216, 50, 220, 216, 50, 220
+    };*/
+
+    // enc 2x3 2 rounds
+    unsigned char imageBytes[] = {
+        241, 197, 171,  77, 121, 26, 101, 155, 186,
+        226, 110,   0, 231, 214, 7, 216, 156, 25
+    };
+
+
 
 
 
@@ -170,24 +188,24 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes) 
 
     DiffusionSetup diffuSetups[2];
 
-    diffuSetups[0].miu = 0.60000000001;
-    diffuSetups[0].x = 0.35000000001;
-    diffuSetups[0].y = 0.35000000002;
+    diffuSetups[0].miu = 0.8597000122;
+    diffuSetups[0].x = 0.7733460001;
+    diffuSetups[0].y = 0.6543224322;
 
-    diffuSetups[1].miu = 0.60000000002;
-    diffuSetups[1].x = 0.36000000001;
-    diffuSetups[1].y = 0.36000000002;
+    diffuSetups[1].miu = 0.84234123412;
+    diffuSetups[1].x = 0.78225545794;
+    diffuSetups[1].y = 0.66346604384;
 
-    int encryptionRounds = 10;
+    int encryptionRounds = 2;
 
     int permutationSequenceLogisticMap[4][numberOfImageBytes];
     unsigned char diffustionSequenceIkedaMap[4][numberOfImageBytes];
 
-    long sumOfAllImageBytes = 0;
+    long sumOfAllImageBytes = 2840;
     double avg = 0;
-    for(int i = 0; i < numberOfImageBytes; i++) {
+    /*for(int i = 0; i < numberOfImageBytes; i++) {
         sumOfAllImageBytes += imageBytes[i];
-    }
+    }*/
 
     PTF("Sum of bytes = %ld\n", sumOfAllImageBytes);
 
@@ -208,11 +226,11 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes) 
         createPermutationSequence(permutationSequenceLogisticMap[i], permSetups[i].r, permSetups[i].x, numberOfImageBytes);
 
         #ifdef DEV
-        PTF("\nPermutation Sequence %d: \n", i);
-        for(int j = 0; j < 10; j++) {
-            PTF("%d - %d\n", j, permutationSequenceLogisticMap[i][j]);
+        PTF("\nPermutation Sequence %d: \n [", i);
+        for(int j = 0; j < 18; j++) {
+            PTF("%d ", permutationSequenceLogisticMap[i][j]);
         }
-        PTF("-------------------\n");
+        PTF(" ]-------------------\n");
         #endif
     }
 
@@ -232,17 +250,17 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes) 
         createDiffusionSequenceIkedaMap(diffuSetups[i].miu, diffuSetups[i].x, diffuSetups[i].y, diffustionSequenceIkedaMap[i*2], diffustionSequenceIkedaMap[(i*2)+1], numberOfImageBytes);
 
         #ifdef DEV
-        PTF("\nDiffusion Sequence %d: \n", i*2);
-        for(int j = 0; j < 10; j++) {
-            PTF("%d - %d\n", j, diffustionSequenceIkedaMap[i*2][j]);
+        PTF("\nDiffusion Sequence %d: \n [ ", i*2);
+        for(int j = 0; j < 18; j++) {
+            PTF("%d ", diffustionSequenceIkedaMap[i*2][j]);
         }
-        PTF("-------------------\n");
+        PTF(" ]-------------------\n");
 
-        PTF("\nDiffusion Sequence %d: \n", (i*2)+1);
-        for(int j = 0; j < 10; j++) {
-            PTF("%d - %d\n", j, diffustionSequenceIkedaMap[(i*2)+1][j]);
+        PTF("\nDiffusion Sequence %d: \n [ ", (i*2)+1);
+        for(int j = 0; j < 18; j++) {
+            PTF("%d ", diffustionSequenceIkedaMap[(i*2)+1][j]);
         }
-        PTF("-------------------\n");
+        PTF(" ]-------------------\n");
         #endif
     }
 
@@ -270,16 +288,22 @@ void decrypt(int numberOfBytes, int permutationSeqs[4][numberOfBytes], unsigned 
 
     for(int i = 0; i < rounds; i++) {
 
-        for(int k = 3; k >= 0; k++) {
+        for(int k = 3; k >= 0; k--) {
 
+            PTF("\n----------- round %d after diffusion %d [", i, k);
             for(int j = 0; j < numberOfBytes; j++) {
                 tmpImageBytes[j] = imageBytes[j]^diffustionSeqs[k][j];
+                PTF("%u, ", tmpImageBytes[j]);
             }
+            PTF("] \n");
 
+            PTF("\n----------- after permutation %d [", k);
             // 1. shuffle
             for(int j = 0; j < numberOfBytes; j++) {
                 imageBytes[permutationSeqs[k][j]] = tmpImageBytes[j];
+                PTF("%u, ", imageBytes[j]);
             }
+            PTF("] -------------------\n");
         }
     }
 }
@@ -292,14 +316,20 @@ void encrypt(int numberOfBytes, int permutationSeqs[4][numberOfBytes], unsigned 
 
         for(int k = 0; k < 4; k++) {
             // 1. shuffle
+            PTF("\n----------- round %d after permutation %d [", i, k);
             for(int j = 0; j < numberOfBytes; j++) {
                 tmpImageBytes[j] = imageBytes[permutationSeqs[k][j]];
+                PTF("%u, ", tmpImageBytes[j]);
             }
+            PTF("] \n");
 
+            PTF("\n----------- after diffusion %d [", k);
             // 2. xor 1
             for(int j = 0; j < numberOfBytes; j++) {
                 imageBytes[j] = tmpImageBytes[j]^diffustionSeqs[k][j];
+                PTF("%u, ", imageBytes[j]);
             }
+            PTF("] -------------------\n");
         }
     }
 }
