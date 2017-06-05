@@ -33,7 +33,7 @@ typedef struct DiffusionSetups {
     double x; // 0 < x < 1
 } DiffusionSetup;
 
-void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes);
+void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permSetups[4], DiffusionSetup diffuSetups[2], int encryptionRounds) ;
 
 void printSequence(double a[], int n);
 void copyArray(double source[], double dest[], int n);
@@ -97,10 +97,7 @@ int main(int argc, char* argv[]) {
 */
     /**/
     // image data
-    int imageH = 2;
-    int imageW = 3;
-    int numberOfImageBytes = imageH*imageW*3;
-    int mode = DEC_MODE;
+
  /* orig 5x4
     unsigned char imageBytes[] = {
 		215, 59, 230, 206, 50, 221, 209, 53, 224, 213, 57, 228, 205, 52, 222, 201, 48, 218, 191,
@@ -131,47 +128,14 @@ int main(int argc, char* argv[]) {
         226, 110,   0, 231, 214, 7, 216, 156, 25
     };
 
+    int imageH = 2;
+    int imageW = 3;
+    int numberOfImageBytes = imageH*imageW*3;
+    int mode = DEC_MODE;
 
+    int encryptionRounds = 2;
 
-
-
-
-    // controll parameter
-    /*
-    double r = 3.812345678; // 3.6 <= r <= 4.0
-    double xPermutation = 0.345678914; // 0 < x < 1
-
-    double miuDiffusion = 0.60122344; // 0.6 < miu <= 1.0
-    double yDiffusion = 0.600030404055; // 0 < y < 1
-    double xDiffusion = 0.9523456; // 0 < x < 1
-*/
-
-    runAlgorithm(mode, imageBytes, numberOfImageBytes);
-/*
-    char encryptedSuffix[] = ".encrypted";
-    strcat(filePath, encryptedSuffix);
-    PTF_IMPT("new filename = %s\n", filePath);
-
-    FILE *encryptedImageBytes = fopen(filePath, "w");
-    for (i = 0; i < numberOfImageBytes; i++)
-    {
-        fprintf(encryptedImageBytes, "%u ", imageBytes[i]);
-    }
-    fclose(encryptedImageBytes);*/
-
-    return 0;
-}
-
-void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes) {
-
-    #ifdef TEST
-    PTF_IMPT("\n----------- original Image [");
-    for(int j = 0; j < numberOfImageBytes; j++) {
-        PTF_IMPT("%u, ", imageBytes[j]);
-    }
-    PTF_IMPT("] -------------------\n");
-    #endif
-
+    // values would have to be based on an key phrase or similar
     PermutationSetup permSetups[4];
 
     permSetups[0].r = 3.6000000001;
@@ -196,17 +160,69 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes) 
     diffuSetups[1].x = 0.78225545794;
     diffuSetups[1].y = 0.66346604384;
 
-    int encryptionRounds = 2;
+    long sumOfAllImageBytes = 2840; // set if decryption mode is on!
+    if(mode == ENC_MODE) {
+        for(int i = 0; i < numberOfImageBytes; i++) {
+            sumOfAllImageBytes += imageBytes[i];
+        }
+    }
+
+
+    // controll parameter
+    /*
+    double r = 3.812345678; // 3.6 <= r <= 4.0
+    double xPermutation = 0.345678914; // 0 < x < 1
+
+    double miuDiffusion = 0.60122344; // 0.6 < miu <= 1.0
+    double yDiffusion = 0.600030404055; // 0 < y < 1
+    double xDiffusion = 0.9523456; // 0 < x < 1
+*/
+
+    #ifdef TEST
+    char *modeDesc = "encryption";
+    if(mode == DEC_MODE)
+        modeDesc = "decryption";
+
+    PTF_IMPT("\n--- running %s mode ---\n", modeDesc);
+
+    PTF_IMPT("\n----------- input Image [");
+    for(int j = 0; j < numberOfImageBytes; j++) {
+        PTF_IMPT("%u, ", imageBytes[j]);
+    }
+    PTF_IMPT("] -------------------\n");
+    #endif
+
+    runAlgorithm(mode, imageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
+
+    #ifdef TEST
+    PTF_IMPT("\n----------- output Image [");
+    for(int j = 0; j < numberOfImageBytes; j++) {
+        PTF_IMPT("%u, ", imageBytes[j]);
+    }
+    PTF_IMPT("] -------------------\n");
+    #endif
+
+/*
+    char encryptedSuffix[] = ".encrypted";
+    strcat(filePath, encryptedSuffix);
+    PTF_IMPT("new filename = %s\n", filePath);
+
+    FILE *encryptedImageBytes = fopen(filePath, "w");
+    for (i = 0; i < numberOfImageBytes; i++)
+    {
+        fprintf(encryptedImageBytes, "%u ", imageBytes[i]);
+    }
+    fclose(encryptedImageBytes);*/
+
+    return 0;
+}
+
+void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permSetups[4], DiffusionSetup diffuSetups[2], int encryptionRounds) {
 
     int permutationSequenceLogisticMap[4][numberOfImageBytes];
     unsigned char diffustionSequenceIkedaMap[4][numberOfImageBytes];
 
-    long sumOfAllImageBytes = 2840;
     double avg = 0;
-    /*for(int i = 0; i < numberOfImageBytes; i++) {
-        sumOfAllImageBytes += imageBytes[i];
-    }*/
-
     PTF("Sum of bytes = %ld\n", sumOfAllImageBytes);
 
     avg = ((double)sumOfAllImageBytes) / (double)(numberOfImageBytes * 63 * 10);
@@ -272,14 +288,6 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes) 
         // 4. decryption rounds
         decrypt(numberOfImageBytes, permutationSequenceLogisticMap, diffustionSequenceIkedaMap, imageBytes, encryptionRounds);
     }
-
-    #ifdef TEST
-    PTF_IMPT("\n----------- encrypted Image [");
-    for(int j = 0; j < numberOfImageBytes; j++) {
-        PTF_IMPT("%u, ", imageBytes[j]);
-    }
-    PTF_IMPT("] -------------------\n");
-    #endif
 }
 
 void decrypt(int numberOfBytes, int permutationSeqs[4][numberOfBytes], unsigned char diffustionSeqs[4][numberOfBytes], unsigned char imageBytes[numberOfBytes],int rounds) {
