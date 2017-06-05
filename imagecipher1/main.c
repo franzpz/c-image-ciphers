@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include "imagecipher1.h"
 
+
+
 int main(int argc, char* argv[]) {
 
     /*argv[1] = "../../5x5image.jpgbytes.txt\0";
@@ -55,7 +57,7 @@ int main(int argc, char* argv[]) {
 */
     // image data
 
- /* orig 5x4
+    // orig 5x4
     unsigned char imageBytes[] = {
 		215, 59, 230, 206, 50, 221, 209, 53, 224, 213, 57, 228, 205, 52, 222, 201, 48, 218, 191,
 		39, 209, 194, 41, 211, 196, 44, 214, 188, 36, 206, 191, 44, 212, 181, 36, 203, 184, 37,
@@ -63,7 +65,7 @@ int main(int argc, char* argv[]) {
 		180, 39, 205, 178, 43, 207, 168, 36, 199, 176, 41, 205, 179, 47, 210, 176, 41, 205
     };
 
-    enc 5x5 10 rounds
+  /*   enc 5x5 10 rounds
     unsigned char imageBytes[] = {
         47, 205, 43, 201, 194, 36, 53, 181, 230, 205, 205, 199, 228, 224, 211, 207, 39, 209, 36,
         212, 41, 34, 44, 209, 201, 176, 205, 221, 209, 48, 215, 37, 179, 44, 187, 41, 179, 210,
@@ -77,20 +79,20 @@ int main(int argc, char* argv[]) {
     unsigned char imageBytes[] = {
         201, 40, 208, 200, 39, 207, 214, 53, 221,
         213, 52, 220, 216, 50, 220, 216, 50, 220
-    };*/
+    };
 
     // enc 2x3 2 rounds
     unsigned char imageBytes[] = {
         241, 197, 171,  77, 121, 26, 101, 155, 186,
         226, 110,   0, 231, 214, 7, 216, 156, 25
-    };
+    };*/
 
-    int imageH = 2;
-    int imageW = 3;
+    int imageH = 5;
+    int imageW = 5;
     int numberOfImageBytes = imageH*imageW*3;
-    int mode = DEC_MODE;
+    int mode = ENC_MODE;
 
-    int encryptionRounds = 2;
+    int encryptionRounds = 10;
 
     // values would have to be based on an key phrase or similar
     PermutationSetup permSetups[4];
@@ -119,34 +121,17 @@ int main(int argc, char* argv[]) {
 
     long sumOfAllImageBytes = 2840; // set if decryption mode is on!
     if(mode == ENC_MODE) {
+        sumOfAllImageBytes = 0;
         for(int i = 0; i < numberOfImageBytes; i++) {
             sumOfAllImageBytes += imageBytes[i];
         }
     }
 
-    #ifdef TEST
-    char *modeDesc = "encryption";
-    if(mode == DEC_MODE)
-        modeDesc = "decryption";
 
-    PTF_IMPT("\n--- running %s mode ---\n", modeDesc);
-
-    PTF_IMPT("\n----------- input Image [");
-    for(int j = 0; j < numberOfImageBytes; j++) {
-        PTF_IMPT("%u, ", imageBytes[j]);
-    }
-    PTF_IMPT("] -------------------\n");
-    #endif
 
     runAlgorithm(mode, imageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
 
-    #ifdef TEST
-    PTF_IMPT("\n----------- output Image [");
-    for(int j = 0; j < numberOfImageBytes; j++) {
-        PTF_IMPT("%u, ", imageBytes[j]);
-    }
-    PTF_IMPT("] -------------------\n");
-    #endif
+
 
 /*
     char encryptedSuffix[] = ".encrypted";

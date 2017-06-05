@@ -1,5 +1,9 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
 
-#define DEV 1
+//#define DEV 1
 #define TEST 1
 
 #ifdef DEV
@@ -28,4 +32,4 @@ typedef struct DiffusionSetups {
     double x; // 0 < x < 1
 } DiffusionSetup;
 
-void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permSetups[4], DiffusionSetup diffuSetups[2], int encryptionRounds);
+void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permutationSetups[4], DiffusionSetup diffusionSetups[2], int encryptionRounds);

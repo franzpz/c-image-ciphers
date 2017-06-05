@@ -18,13 +18,55 @@ double generateControlParametersLogisticMap(double basicR, double avgOfImageByte
 void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], int sequenceLength);
 double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, int numberOfImageBytes);
 
-void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permSetups[4], DiffusionSetup diffuSetups[2], int encryptionRounds) {
+void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permutationSetups[4], DiffusionSetup diffusionSetups[2], int encryptionRounds) {
+
+    // copy setups so they are not changed
+    PermutationSetup permSetups[4];
+    DiffusionSetup diffuSetups[2];
+
+    for(int i = 0; i < 4; i ++) {
+        permSetups[i].r = permutationSetups[i].r;
+        permSetups[i].x = permutationSetups[i].x;
+    }
+    for(int i = 0; i < 2; i ++) {
+        diffuSetups[i].miu = diffusionSetups[i].miu;
+        diffuSetups[i].x = diffusionSetups[i].x;
+        diffuSetups[i].y = diffusionSetups[i].y;
+    }
+
+    #ifdef TEST
+    char *modeDesc = "encryption";
+    if(mode == DEC_MODE)
+        modeDesc = "decryption";
+
+    PTF_IMPT("\n--- running %s mode ---\n", modeDesc);
+
+    PTF_IMPT("\n----------- input Image [");
+    for(int j = 0; j < numberOfImageBytes; j++) {
+        PTF_IMPT("%u, ", imageBytes[j]);
+    }
+    PTF_IMPT("] -------------------\n");
+
+    PTF_IMPT("Permutation setups: \n");
+    for(int i = 0; i < 4; i ++) {
+        PTF_IMPT("%d setup\n   r = %0.20f\n   x = %0.20f\n", i, permSetups[i].r, permSetups[i].x);
+    }
+    PTF_IMPT("-------------------\n");
+
+    PTF_IMPT("Diffusion setups: \n");
+    for(int i = 0; i < 2; i ++) {
+        PTF_IMPT("%d setup\n   miu = %0.20f\n   x = %0.20f\n   y = %0.20f\n", i, diffuSetups[i].miu, diffuSetups[i].x, diffuSetups[i].y);
+    }
+    PTF_IMPT("-------------------\n");
+
+    PTF_IMPT("Image size (number of bytes) = %d\n", numberOfImageBytes);
+    #endif
 
     int permutationSequenceLogisticMap[4][numberOfImageBytes];
     unsigned char diffustionSequenceIkedaMap[4][numberOfImageBytes];
 
     double avg = 0;
-    PTF("Sum of bytes = %ld\n", sumOfAllImageBytes);
+    PTF_IMPT("Sum of bytes = %ld\n", sumOfAllImageBytes);
 
     avg = ((double)sumOfAllImageBytes) / (double)(numberOfImageBytes * 63 * 10);
     PTF("Average = %.15f\n", avg);
@@ -89,6 +131,14 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, 
         // 4. decryption rounds
         decrypt(numberOfImageBytes, permutationSequenceLogisticMap, diffustionSequenceIkedaMap, imageBytes, encryptionRounds);
     }
+
+    #ifdef TEST
+    PTF_IMPT("\n----------- output Image [");
+    for(int j = 0; j < numberOfImageBytes; j++) {
+        PTF_IMPT("%u, ", imageBytes[j]);
+    }
+    PTF_IMPT("] -------------------\n");
+    #endif
 }
 
 void decrypt(int numberOfBytes, int permutationSeqs[4][numberOfBytes], unsigned char diffustionSeqs[4][numberOfBytes], unsigned char imageBytes[numberOfBytes],int rounds) {
