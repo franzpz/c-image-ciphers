@@ -4,16 +4,16 @@
 #include <math.h>
 #include "imagecipher1.h"
 
-void printSequence(double a[], int n);
-void sort(double a[], int n);
-int find(double array[], double data, int length);
+void printSequence(double a[], long n);
+void sort(double a[], long n);
+int find(double array[], double data, long length);
 
-void createPermutationSequence(int permutationSequence[], double r, double x, int sequenceLength);
-double generateControlParametersLogisticMap(double basicR, double avgOfImageByteSum, int numberOfImageBytes);
-void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], int sequenceLength);
-double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, int numberOfImageBytes);
+void createPermutationSequence(int permutationSequence[], double r, double x, long sequenceLength);
+double generateControlParametersLogisticMap(double basicR, double avgOfImageByteSum, long numberOfImageBytes);
+void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], long sequenceLength);
+double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, long numberOfImageBytes);
 
-void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permutationSetups[4], DiffusionSetup diffusionSetups[2], int encryptionRounds) {
+void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permutationSetups[4], DiffusionSetup diffusionSetups[2], int encryptionRounds) {
 
     // copy setups so they are not changed
     PermutationSetup permSetups[4];
@@ -37,7 +37,7 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, 
     PTF_IMPT("\n--- running %s mode ---\n", modeDesc);
 
     PTF_IMPT("\n----------- input Image [");
-    for(int j = 0; j < numberOfImageBytes; j++) {
+    for(long j = 0; j < numberOfImageBytes; j++) {
         PTF_IMPT("%u, ", imageBytes[j]);
     }
     PTF_IMPT("] -------------------\n");
@@ -54,7 +54,7 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, 
     }
     PTF_IMPT("-------------------\n");
 
-    PTF_IMPT("Image size (number of bytes) = %d\n", numberOfImageBytes);
+    PTF_IMPT("Image size (number of bytes) = %ld\n", numberOfImageBytes);
     #endif
 
     int permutationSequenceLogisticMap[4][numberOfImageBytes];
@@ -92,7 +92,7 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, 
     // 3. generate control parameters for ikeda map based on image
     PTF("\n-------------Diffustion Parameters\n");
     for(int i = 0; i < 2; i++) {
-        diffuSetups[i].miu = generateControlParametersLogisticMap(diffuSetups[i].miu, avg, numberOfImageBytes);
+        diffuSetups[i].miu = generateControlParametersIkedaMap(diffuSetups[i].miu, avg, numberOfImageBytes);
         PTF("miu%d = %.15f\n", i, diffuSetups[i].miu);
     }
     PTF("-------------\n");
@@ -120,44 +120,62 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, 
 
     if(mode == ENC_MODE) {
         // 5. Encryption rounds
-        unsigned char tmpImageBytes[numberOfImageBytes];
-        memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
+        unsigned char *tmpImageBytes = (unsigned char*)malloc(sizeof(unsigned char)*numberOfImageBytes);
+        //memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
 
-        int k, j;
+        long k, j;
         for(int i = 0; i < encryptionRounds; i++) {
 
             for(k = 0; k < 4; k++) {
-                PTF("\n----------- round %d after permutation %d and diffustion %d [", i, k, k);
+                PTF("\n----------- round %d after permutation %d [", i, k);
                 for(j = 0; j < numberOfImageBytes; j++) {
-                    imageBytes[j] = tmpImageBytes[permutationSequenceLogisticMap[k][j]]^diffustionSequenceIkedaMap[k][j];
+                    tmpImageBytes[j] = imageBytes[permutationSequenceLogisticMap[k][j]];
+                    PTF("%u, ", tmpImageBytes[j]);
+                }
+                PTF("] \n");
+
+                PTF("\n----------- round %d after diffustion %d [", i, k);
+                for(j = 0; j < numberOfImageBytes; j++) {
+                    imageBytes[j] = tmpImageBytes[j]^diffustionSequenceIkedaMap[k][j];
                     PTF("%u, ", imageBytes[j]);
                 }
                 PTF("] \n");
 
-                memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
+                //memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
             }
         }
+
+        free(tmpImageBytes);
     }
     else if(mode == DEC_MODE) {
         // 5. decryption rounds
-        unsigned char tmpImageBytes[numberOfImageBytes];
-        memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
+        unsigned char *tmpImageBytes = (unsigned char*)malloc(sizeof(unsigned char)*numberOfImageBytes);
+        //memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
 
-        int k, j;
+        long k, j;
         for(int i = 0; i < encryptionRounds; i++) {
 
             for(k = 3; k >= 0; k--) {
 
-                PTF("\n----------- [ORDER NOT RIGHT - optimized] round %d after permutation %d and diffustion %d [", i, k, k);
+                PTF("\n----------- round %d after permutation %d [", i, k);
                 for(j = 0; j < numberOfImageBytes; j++) {
-                    imageBytes[permutationSequenceLogisticMap[k][j]] = tmpImageBytes[j]^diffustionSequenceIkedaMap[k][j];
+                    tmpImageBytes[j] = imageBytes[j]^diffustionSequenceIkedaMap[k][j];
+                    PTF("%u, ", tmpImageBytes[j]);
+                }
+                PTF("] \n");
+
+                PTF("\n----------- round %d after diffustion %d [", i, k);
+                for(j = 0; j < numberOfImageBytes; j++) {
+                    imageBytes[permutationSequenceLogisticMap[k][j]] = tmpImageBytes[j];
                     PTF("%u, ", imageBytes[j]);
                 }
                 PTF("] \n");
 
-                memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
+                //memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
             }
         }
+
+        free(tmpImageBytes);
     }
 
     #ifdef TEST
@@ -169,7 +187,7 @@ void runAlgorithm(int mode, unsigned char imageBytes[], int numberOfImageBytes, 
     #endif
 }
 
-void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], int sequenceLength){
+void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], long sequenceLength){
     int entriesToSkip = 1000;
     double multiply = pow(10.0, 16);
     double absX;
@@ -183,7 +201,7 @@ void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned ch
     PTF("--------- Creating Diffusion Sequence ---------\n")
 
     // calculate chaotic map sequences
-    for(int i = 0; i < entriesToSkip + sequenceLength; i++) {
+    for(long i = 0; i < entriesToSkip + sequenceLength; i++) {
         tn = 0.4 - (6.0 / (1.0 + xn*xn + yn*yn));
 
         cosT = cos(tn);
@@ -204,7 +222,7 @@ void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned ch
     }
 }
 
-double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, int numberOfImageBytes) {
+double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, long numberOfImageBytes) {
     double r = 0.0;
 
     if(numberOfImageBytes <= 1000000)
@@ -217,7 +235,7 @@ double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, i
 	return r;
 }
 
-double generateControlParametersLogisticMap(double basicR, double avgOfImageByteSum, int numberOfImageBytes) {
+double generateControlParametersLogisticMap(double basicR, double avgOfImageByteSum, long numberOfImageBytes) {
     double r = 0.0;
 
     if(numberOfImageBytes <= 1000000)
@@ -230,14 +248,14 @@ double generateControlParametersLogisticMap(double basicR, double avgOfImageByte
 	return r;
 }
 
-void createPermutationSequence(int permutationSequence[], double r, double x, int sequenceLength) {
+void createPermutationSequence(int permutationSequence[], double r, double x, long sequenceLength) {
     double sequenceC[sequenceLength];
     double sequenceS[sequenceLength];
     double xn = x;
 
     // create original chaotic sequence (skip 1st 1000 entries)
     int transientResultsToSkip = 1000;
-    for(int i = 0; i < transientResultsToSkip + sequenceLength; i++) {
+    for(long i = 0; i < transientResultsToSkip + sequenceLength; i++) {
         xn = r * xn * (1 - xn);
         if(i >= transientResultsToSkip)
             sequenceC[i-transientResultsToSkip] = xn;
@@ -275,7 +293,7 @@ void createPermutationSequence(int permutationSequence[], double r, double x, in
     double tmpTimes;
     int groupNumber, tmpResult1, tmpResult2;
 
-    for(int i = 0; i < sequenceLength; i++) {
+    for(long i = 0; i < sequenceLength; i++) {
 
         tmpTimes = sequenceS[i]*1000000;
         // get group number
@@ -294,7 +312,7 @@ void createPermutationSequence(int permutationSequence[], double r, double x, in
         groupedArrays[groupNumber][lastGroupedArrayPosition[groupNumber]++] = sequenceS[i];
     }
 
-    int permutationIndex = 0;
+    long permutationIndex = 0;
 
     for(int i = 0; i < 10; i++) {
         if(permutationIndex >= sequenceLength)
@@ -308,7 +326,7 @@ void createPermutationSequence(int permutationSequence[], double r, double x, in
     }
 }
 
-void printSequence(double a[], int n) {
+void printSequence(double a[], long n) {
     #ifdef DEV
     for(int i = 0; i < n; i++) {
         PTF("%d - %.15f\n", i, a[i]);
@@ -317,8 +335,8 @@ void printSequence(double a[], int n) {
     #endif
 }
 
-void sort(double array[], int n){
-    int c, d;
+void sort(double array[], long n){
+    long c, d;
     double t;
 
     for (c = 1 ; c <= n - 1; c++) {
@@ -334,7 +352,7 @@ void sort(double array[], int n){
     }
 }
 
-int find(double array[], double data, int length) {
+int find(double array[], double data, long length) {
    int lowerBound = 0;
    int upperBound = length -1;
    int midPoint = -1;

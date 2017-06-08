@@ -28,10 +28,10 @@ void test5x5ImageEncryption(PermutationSetup permSetups[4], DiffusionSetup diffu
     }
 
     unsigned char expectedEncryptedImageBytes[] = {
-        186, 86, 172, 105, 93, 202, 241, 58, 39, 180, 147, 224, 18, 125, 179, 201, 211, 192, 161, 
-        234, 16, 68, 104, 218, 43, 103, 80, 27, 177, 188, 77, 105, 97, 89, 111, 152, 93, 229, 202, 
-        40, 93, 130, 249, 70, 217, 183, 23, 186, 176, 241, 163, 108, 100, 111, 83, 11, 127, 204, 
-        250, 30, 167, 87, 237, 2, 88, 176, 164, 18, 41, 125, 184, 202, 40, 125, 243
+        104, 104, 15, 231, 253, 3, 37, 202, 184, 96, 3, 8, 70, 129, 129, 67, 32, 102, 138, 203, 
+        227, 255, 250, 240, 85, 92, 88, 64, 220, 42, 113, 226, 149, 98, 163, 160, 253, 0, 101, 
+        31, 44, 225, 47, 90, 250, 58, 241, 129, 176, 72, 87, 13, 189, 250, 242, 102, 255, 195, 
+        83, 27, 223, 205, 144, 246, 184, 111, 200, 200, 72, 164, 223, 89, 126, 3, 237,
     };
 
     runAlgorithm(mode, origImageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
@@ -59,7 +59,7 @@ void test5x5ImageDecryption(PermutationSetup permSetups[4], DiffusionSetup diffu
 
     int encryptionRounds = 10;
 
-    unsigned char expectedEncryptedImageBytes[] = {
+    unsigned char origImageBytes[] = {
         215, 59, 230, 206, 50, 221, 209, 53, 224, 213, 57, 228, 205, 52, 222, 201, 48, 218, 191,
         39, 209, 194, 41, 211, 196, 44, 214, 188, 36, 206, 191, 44, 212, 181, 36, 203, 184, 37,
         205, 187, 42, 209, 179, 34, 201, 185, 44, 210, 176, 37, 202, 181, 40, 206, 185, 46, 211,
@@ -68,24 +68,24 @@ void test5x5ImageDecryption(PermutationSetup permSetups[4], DiffusionSetup diffu
 
     long sumOfAllImageBytes = 0;
     for(int i = 0; i < numberOfImageBytes; i++) {
-        sumOfAllImageBytes += expectedEncryptedImageBytes[i];
+        sumOfAllImageBytes += origImageBytes[i];
     }
 
-    unsigned char origImageBytes[] = {
-        186, 86, 172, 105, 93, 202, 241, 58, 39, 180, 147, 224, 18, 125, 179, 201, 211, 192, 161, 
-        234, 16, 68, 104, 218, 43, 103, 80, 27, 177, 188, 77, 105, 97, 89, 111, 152, 93, 229, 202, 
-        40, 93, 130, 249, 70, 217, 183, 23, 186, 176, 241, 163, 108, 100, 111, 83, 11, 127, 204, 
-        250, 30, 167, 87, 237, 2, 88, 176, 164, 18, 41, 125, 184, 202, 40, 125, 243
+    unsigned char encryptedImageBytes[] = {
+        104, 104, 15, 231, 253, 3, 37, 202, 184, 96, 3, 8, 70, 129, 129, 67, 32, 102, 138, 203, 
+        227, 255, 250, 240, 85, 92, 88, 64, 220, 42, 113, 226, 149, 98, 163, 160, 253, 0, 101, 
+        31, 44, 225, 47, 90, 250, 58, 241, 129, 176, 72, 87, 13, 189, 250, 242, 102, 255, 195, 
+        83, 27, 223, 205, 144, 246, 184, 111, 200, 200, 72, 164, 223, 89, 126, 3, 237,
     };
 
-    runAlgorithm(mode, origImageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
+    runAlgorithm(mode, encryptedImageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
 
     char *result = "success";
 
     for(int i = 0; i < numberOfImageBytes; i++) {
-        if(origImageBytes[i] != expectedEncryptedImageBytes[i]) {
+        if(encryptedImageBytes[i] != origImageBytes[i]) {
             result = "failure";
-            PTF("error at byte %d, expected: %u, actual %u", i, expectedEncryptedImageBytes[i], origImageBytes[i]);
+            PTF("error at byte %d, expected: %u, actual %u", i, origImageBytes[i], encryptedImageBytes[i]);
             break;
         }
     }
@@ -103,29 +103,29 @@ void test2x3ImageDecryption(PermutationSetup permSetups[4], DiffusionSetup diffu
 
     int encryptionRounds = 2;
 
-    unsigned char expectedEncryptedImageBytes[] = {
-        201, 40, 208, 200, 39, 207, 214, 53, 221,
-        213, 52, 220, 216, 50, 220, 216, 50, 220
+    unsigned char expectedOrigImageBytes[] = {
+        201, 40, 208, 214, 53, 221, 216, 50, 220,
+        200, 39, 207, 213, 52, 220, 216, 50, 220 
     };
 
     long sumOfAllImageBytes = 0;
     for(int i = 0; i < numberOfImageBytes; i++) {
-        sumOfAllImageBytes += expectedEncryptedImageBytes[i];
+        sumOfAllImageBytes += expectedOrigImageBytes[i];
     }
 
-    unsigned char origImageBytes[] = {
-        241, 197, 171,  77, 121, 26, 101, 155, 186,
-        226, 110,   0, 231, 214, 7, 216, 156, 25
+    unsigned char encryptedImageBytes[] = {
+        60, 90, 93, 241, 230, 60, 122, 214, 108, 53, 
+        253, 63, 33, 143, 147, 216, 192, 16
     };
 
-    runAlgorithm(mode, origImageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
+    runAlgorithm(mode, encryptedImageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
 
     char *result = "success";
 
     for(int i = 0; i < numberOfImageBytes; i++) {
-        if(origImageBytes[i] != expectedEncryptedImageBytes[i]) {
+        if(encryptedImageBytes[i] != expectedOrigImageBytes[i]) {
             result = "failure";
-            printf("error at byte %d, expected: %u, actual %u", i, expectedEncryptedImageBytes[i], origImageBytes[i]);
+            printf("error at byte %d, expected: %u, actual %u", i, expectedOrigImageBytes[i], encryptedImageBytes[i]);
             break;
         }
     }
@@ -144,8 +144,8 @@ void test2x3ImageEncryption(PermutationSetup permSetups[4], DiffusionSetup diffu
     int encryptionRounds = 2;
 
     unsigned char origImageBytes[] = {
-        201, 40, 208, 200, 39, 207, 214, 53, 221,
-        213, 52, 220, 216, 50, 220, 216, 50, 220
+        201, 40, 208, 214, 53, 221, 216, 50, 220,
+        200, 39, 207, 213, 52, 220, 216, 50, 220 
     };
 
     long sumOfAllImageBytes = 0;
@@ -154,8 +154,8 @@ void test2x3ImageEncryption(PermutationSetup permSetups[4], DiffusionSetup diffu
     }
 
     unsigned char expectedEncryptedImageBytes[] = {
-        241, 197, 171,  77, 121, 26, 101, 155, 186,
-        226, 110,   0, 231, 214, 7, 216, 156, 25
+        60, 90, 93, 241, 230, 60, 122, 214, 108, 53, 
+        253, 63, 33, 143, 147, 216, 192, 16
     };
 
     runAlgorithm(mode, origImageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
@@ -191,13 +191,13 @@ int main(int argc, char* argv[]) {
 
     DiffusionSetup diffuSetups[2];
 
-    diffuSetups[0].miu = 0.8597000122;
-    diffuSetups[0].x = 0.7733460001;
-    diffuSetups[0].y = 0.6543224322;
+    diffuSetups[0].miu = 0.600000000000001;
+    diffuSetups[0].x = 0.350000000000001;
+    diffuSetups[0].y = 0.350000000000002;
 
-    diffuSetups[1].miu = 0.84234123412;
-    diffuSetups[1].x = 0.78225545794;
-    diffuSetups[1].y = 0.66346604384;
+    diffuSetups[1].miu = 0.600000000000002;
+    diffuSetups[1].x = 0.360000000000001;
+    diffuSetups[1].y = 0.360000000000002;
 
     test5x5ImageEncryption(permSetups, diffuSetups);
     test5x5ImageDecryption(permSetups, diffuSetups);

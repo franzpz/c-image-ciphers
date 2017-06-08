@@ -10,8 +10,8 @@ y = 0
 
 imagePixelValues = list()
 
-for x in range(0, image.size[0]):
-	for y in range(0, image.size[1]):
+for y in range(0, image.size[1]):
+	for x in range(0, image.size[0]):
 		imagePixelValues.append(pix[x,y][0])
 		imagePixelValues.append(pix[x,y][1])
 		imagePixelValues.append(pix[x,y][2])

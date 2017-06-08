@@ -77,8 +77,8 @@ int main(int argc, char* argv[]) {
 
     // orig 2x3
     unsigned char imageBytes[] = {
-        201, 40, 208, 200, 39, 207, 214, 53, 221,
-        213, 52, 220, 216, 50, 220, 216, 50, 220
+        201, 40, 208, 214, 53, 221, 216, 50, 220,
+        200, 39, 207, 213, 52, 220, 216, 50, 220
     };
 /*
     // enc 2x3 2 rounds
@@ -111,6 +111,15 @@ int main(int argc, char* argv[]) {
 
     DiffusionSetup diffuSetups[2];
 
+    diffuSetups[0].miu = 0.600000000000001;
+    diffuSetups[0].x = 0.350000000000001;
+    diffuSetups[0].y = 0.350000000000002;
+
+    diffuSetups[1].miu = 0.600000000000002;
+    diffuSetups[1].x = 0.360000000000001;
+    diffuSetups[1].y = 0.360000000000002;
+
+    /*
     diffuSetups[0].miu = 0.8597000122;
     diffuSetups[0].x = 0.7733460001;
     diffuSetups[0].y = 0.6543224322;
@@ -118,6 +127,7 @@ int main(int argc, char* argv[]) {
     diffuSetups[1].miu = 0.84234123412;
     diffuSetups[1].x = 0.78225545794;
     diffuSetups[1].y = 0.66346604384;
+    */
 
     long sumOfAllImageBytes = 2840; // set if decryption mode is on!
     if(mode == ENC_MODE) {
