@@ -137,19 +137,20 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
             for(k = 0; k < 4; k++) {
                 PTF("\n----------- round %d after permutation %d [", i, k);
                 for(j = 0; j < numberOfImageBytes; j++) {
-                    tmpImageBytes[j] = imageBytes[permutationSequenceLogisticMap[k][j]];
+                    tmpImageBytes[j] = imageBytes[permutationSequenceLogisticMap[k][j]]^diffustionSequenceIkedaMap[k][j];
                     PTF("%u, ", tmpImageBytes[j]);
                 }
                 PTF("] \n");
 
+/*
                 PTF("\n----------- round %d after diffustion %d [", i, k);
                 for(j = 0; j < numberOfImageBytes; j++) {
                     imageBytes[j] = tmpImageBytes[j]^diffustionSequenceIkedaMap[k][j];
                     PTF("%u, ", imageBytes[j]);
                 }
-                PTF("] \n");
+                PTF("] \n");*/
 
-                //memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
+                memcpy(imageBytes, tmpImageBytes, numberOfImageBytes * sizeof(unsigned char));
             }
         }
 
@@ -167,19 +168,20 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
 
                 PTF("\n----------- round %d after permutation %d [", i, k);
                 for(j = 0; j < numberOfImageBytes; j++) {
-                    tmpImageBytes[j] = imageBytes[j]^diffustionSequenceIkedaMap[k][j];
+                    tmpImageBytes[permutationSequenceLogisticMap[k][j]] = imageBytes[j]^diffustionSequenceIkedaMap[k][j];
                     PTF("%u, ", tmpImageBytes[j]);
                 }
                 PTF("] \n");
-
+/*
                 PTF("\n----------- round %d after diffustion %d [", i, k);
                 for(j = 0; j < numberOfImageBytes; j++) {
                     imageBytes[permutationSequenceLogisticMap[k][j]] = tmpImageBytes[j];
                     PTF("%u, ", imageBytes[j]);
                 }
                 PTF("] \n");
+                */
 
-                //memcpy(tmpImageBytes, imageBytes, numberOfImageBytes * sizeof(unsigned char));
+                memcpy(imageBytes, tmpImageBytes, numberOfImageBytes * sizeof(unsigned char));
             }
         }
 
