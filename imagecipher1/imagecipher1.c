@@ -265,7 +265,6 @@ double generateControlParametersLogisticMap(double basicR, double avgOfImageByte
 }
 
 void createPermutationSequence(int permutationSequence[], double r, double x, long sequenceLength) {
-    double sequenceC[sequenceLength];
     double sequenceS[sequenceLength];
     double xn = x;
 
@@ -274,7 +273,7 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
     for(long i = 0; i < transientResultsToSkip + sequenceLength; i++) {
         xn = r * xn * (1 - xn);
         if(i >= transientResultsToSkip)
-            sequenceC[i-transientResultsToSkip] = xn;
+            sequenceS[i-transientResultsToSkip] = xn;
     }
     /*
     PTF("original sequence C\n");
@@ -282,7 +281,7 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
     */
 
     // create sorted sequence S based on sequence C
-    memcpy(sequenceS, sequenceC, sequenceLength * sizeof(double));
+    //memcpy(sequenceS, sequenceC, sequenceLength * sizeof(double));
 
     sort(sequenceS, sequenceLength);
 
