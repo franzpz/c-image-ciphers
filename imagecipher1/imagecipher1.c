@@ -265,7 +265,7 @@ double generateControlParametersLogisticMap(double basicR, double avgOfImageByte
 }
 
 void createPermutationSequence(int permutationSequence[], double r, double x, long sequenceLength) {
-    double sequenceS[sequenceLength];
+    double *sequenceS = (double*)malloc(sizeof(double)*sequenceLength);
     double xn = x;
 
     // create original chaotic sequence (skip 1st 1000 entries)
@@ -291,13 +291,16 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
     */
 
     // better allocation (use malloc)
-    double groupedArrays[10][sequenceLength];
-    int lastGroupedArrayPosition[10];
+    int numberOfGroups = 10;
+    double **groupedArrays = (double**)malloc(sizeof(double*)*numberOfGroups);
+    int groupArrayLengths = (int)sequenceLength;
+    int *lastGroupedArrayPosition = (int*)malloc(sizeof(int)*numberOfGroups);
 
     // initialize arrays
     int j;
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < numberOfGroups; i++) {
         lastGroupedArrayPosition[i] = 0;
+        groupedArrays[i] = (double*)malloc(sizeof(double)*groupArrayLengths);
 
         for(j = 0; j < sequenceLength; j++) {
             groupedArrays[i][j] = -1;
@@ -329,7 +332,7 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
 
     long permutationIndex = 0;
 
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < numberOfGroups; i++) {
         if(permutationIndex >= sequenceLength)
             break;
 
@@ -339,6 +342,13 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
             j++;
         }
     }
+
+    for(int i = 0; i < numberOfGroups; i++){
+        free(groupedArrays[i]);
+    }
+    free(groupedArrays);
+    free(lastGroupedArrayPosition);
+    free(sequenceS);
 }
 
 void printSequence(double a[], long n) {
