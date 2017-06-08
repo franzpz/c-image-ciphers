@@ -57,8 +57,16 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
     PTF_IMPT("Image size (number of bytes) = %ld\n", numberOfImageBytes);
     #endif
 
-    int permutationSequenceLogisticMap[4][numberOfImageBytes];
-    unsigned char diffustionSequenceIkedaMap[4][numberOfImageBytes];
+    /*int permutationSequenceLogisticMap[4][numberOfImageBytes];
+    unsigned char diffustionSequenceIkedaMap[4][numberOfImageBytes];*/
+
+    int **permutationSequenceLogisticMap = (int**)malloc(sizeof(int*)*4);
+    unsigned char **diffustionSequenceIkedaMap = (unsigned char**)malloc(sizeof(unsigned char*)*4);
+
+    for(int i = 0; i < 4; i++){
+        permutationSequenceLogisticMap[i] = (int*)malloc(sizeof(int)*numberOfImageBytes);
+        diffustionSequenceIkedaMap[i] = (unsigned char *)malloc(sizeof(unsigned char)*numberOfImageBytes);
+    }
 
     double avg = 0;
     PTF_IMPT("Sum of bytes = %ld\n", sumOfAllImageBytes);
@@ -177,6 +185,14 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
 
         free(tmpImageBytes);
     }
+
+    for(int i = 0; i < 4; i++){
+        free(permutationSequenceLogisticMap[i]);
+        free(diffustionSequenceIkedaMap[i]);
+    }
+
+    free(permutationSequenceLogisticMap);
+    free(diffustionSequenceIkedaMap);
 
     #ifdef TEST
     PTF_IMPT("\n----------- output Image [");
