@@ -8,10 +8,7 @@
 
 void test2x8ImageEncryption() {
 
-    printf("\n---- test5x5ImageEncryption ----");
-    
-
-    int encryptionRounds = 1;
+    printf("\n---- test2x8ImageEncryption ----");
 
     unsigned char key[] = {
         49, 50, 51, 52, 53, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 0
@@ -32,7 +29,9 @@ void test2x8ImageEncryption() {
 
     AlgorithmParameter params = generateInitialContitions(key);
 
-    encrypt(params, origImageBytes, key);
+    encrypt(&params, origImageBytes, key);
+
+    PTF("Done encrypting");
 
     char *result = "success";
 

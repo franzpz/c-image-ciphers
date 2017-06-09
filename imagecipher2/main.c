@@ -42,8 +42,6 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-
-
     unsigned char key[KEY_SIZE];
     strcpy(key, "1234578901234567890123456789012");
     PTF("using Key: ");
@@ -60,23 +58,34 @@ int main(int argc, char* argv[]) {
     while(!feof(origFile)) {
         int bufferPos = 0;
 
-        PTF("\n---- Block %d: ", block);
+        PTF("\n---- Reading Block %d: [", block);
 
         while(bufferPos < BUFFER_SIZE){
             buffer[bufferPos] = (unsigned char)value;
-            PTF("%u ", buffer[bufferPos]);
 
             if(feof(origFile))
                 break;
 
+            PTF("%u ", buffer[bufferPos]);
             fscanf(origFile, "%d", &value);
             bufferPos++;
         }
 
-        // TODO: encrypt/decrypt
+        PTF("] ----\n")
+        PTF("\n---- Starting encryption ----\n");
 
-        for(int i = 0; i < BUFFER_SIZE; i++)
+        // TODO: encrypt/decrypt
+        AlgorithmParameter params = generateInitialContitions(key);
+
+        PTF("---- using initial parameters: X= %0.15f, C= %d \n", params.X, params.C);
+        encrypt(&params, buffer, key);
+
+        PTF("\n---- Writing Block %d: [", block);
+        for(int i = 0; i < bufferPos; i++) {
+            PTF("%u ", buffer[i]);
             fprintf(convFile, "%d ", (int)buffer[i]);
+        }
+        PTF("] ----\n")
 
         block++;
     }
