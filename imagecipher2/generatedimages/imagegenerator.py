@@ -1,6 +1,7 @@
 from PIL import Image
 import sys
 
+"""
 basicFilename = "image.png";
 
 for i in range(2, 300, 10):
@@ -18,3 +19,14 @@ for i in range(2, 300, 10):
 
 	im.putdata(data)
 	im.save(str(i) + "x" + str(i) + basicFilename, "PNG")
+"""
+
+basicFilename = "image.png";
+
+im = Image.new("RGBA", (2, 4))
+data = [];
+for j in range(0, 8):
+		data.append(tuple([66, 244, 125, 255]))
+
+im.putdata(data)
+im.save(str(2) + "x" + str(8) + basicFilename, "PNG")

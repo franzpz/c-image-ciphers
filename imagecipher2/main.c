@@ -46,6 +46,10 @@ int main(int argc, char* argv[]) {
 
     unsigned char key[KEY_SIZE];
     strcpy(key, "1234578901234567890123456789012");
+    PTF("using Key: ");
+    for(int i = 0; i < KEY_SIZE; i++)
+            PTF("%u ", key[i]);
+    PTF("\n")
 
     PTF("------ READING: ");
 
