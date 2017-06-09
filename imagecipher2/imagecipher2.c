@@ -13,6 +13,15 @@ double generateControlParametersLogisticMap(double basicR, double avgOfImageByte
 void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], long sequenceLength);
 double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, long numberOfImageBytes);
 
+AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
+    AlgorithmParameter param;
+    return param;
+}
+
+AlgorithmParameter encrypt(AlgorithmParameter params, unsigned char imageBytes[BUFFER_SIZE], unsigned char key[KEY_SIZE]) {
+    return params;
+}
+
 void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permutationSetups[4], DiffusionSetup diffusionSetups[2], int encryptionRounds) {
 
     // copy setups so they are not changed
