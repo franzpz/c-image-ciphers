@@ -9,12 +9,12 @@
 void test5x5ImageEncryption(PermutationSetup permSetups[4], DiffusionSetup diffuSetups[2]) {
 
     printf("\n---- test5x5ImageEncryption ----");
-    int imageH = 5;
-    int imageW = 5;
+    int imageH = 10;
+    int imageW = 10;
     int numberOfImageBytes = imageH*imageW*3;
     int mode = ENC_MODE;
 
-    int encryptionRounds = 2;
+    int encryptionRounds = 10;
 
     unsigned char origImageBytes[] = {
         67,76,243,67,76,243,67,76,243,67,76,243,67,76,243,67,76,243,67,76,243,67,76,243,67,76,243,
@@ -230,12 +230,14 @@ int main(int argc, char* argv[]) {
     diffuSetups[1].x = 0.360000000000001;
     diffuSetups[1].y = 0.360000000000002;
 
-    test5x5ImageEncryption(permSetups, diffuSetups);
+    /*test5x5ImageEncryption(permSetups, diffuSetups);
     test5x5ImageDecryption(permSetups, diffuSetups);
     test2x3ImageEncryption(permSetups, diffuSetups);
-    test2x3ImageDecryption(permSetups, diffuSetups);
+    test2x3ImageDecryption(permSetups, diffuSetups);*/
 
-    //testExecutionTime(permSetups, diffuSetups); 
+    printf("before");
+    testExecutionTime(permSetups, diffuSetups); 
+
 
     return 0;
 }

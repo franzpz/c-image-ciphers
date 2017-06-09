@@ -49,7 +49,7 @@ int find(double array[], double data, int length) {
 }
 
 int main(int argc, char* argv[]) {
-
+    /*
     double test1 = 0.174841450890799; // expected 1st 6 and 9
     double test2 = 0.946153363651837; // expected 1st 4 und 1
 
@@ -65,6 +65,11 @@ int main(int argc, char* argv[]) {
     int index = find(sortedArray, 3.45, 5);
 
     printf("expected: %d, actual: %d", 3, index);
+    */
+
+    double b = 0.512345678912346;
+    double b2 = pow(b, 2.0);
+    printf("%.20f\n", b2);
 
 	return 0;
 }

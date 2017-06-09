@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "imagecipher1.h"
-#include "time.h"
 
 
 void test5x5ImageEncryption(PermutationSetup permSetups[4], DiffusionSetup diffuSetups[2]) {
@@ -33,7 +32,6 @@ void test5x5ImageEncryption(PermutationSetup permSetups[4], DiffusionSetup diffu
         110, 204, 252, 41, 142, 66, 156, 210, 85, 8, 193, 122, 57, 128, 124, 152, 158, 247, 15, 16, 
         177, 242, 206, 232, 176, 174, 41, 223, 102, 186, 125, 112, 29
     };
-
 
     runAlgorithm(mode, origImageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
 
@@ -173,37 +171,6 @@ void test2x3ImageEncryption(PermutationSetup permSetups[4], DiffusionSetup diffu
     printf(" Result: %s ----\n", result);
 }
 
-void testExecutionTime(PermutationSetup permSetups[4], DiffusionSetup diffuSetups[2]){
-    printf("\n---- testExecutionTime ----");
-
-    int height = 100;
-    int width = 100;
-    int numberOfImageBytes = height*width*3;
-    printf("\nnumber of image bytes %d\n", numberOfImageBytes );
-
-    unsigned char origImageBytes[numberOfImageBytes];
-
-    printf("creating image sequence");
-    for(int i = 0; i < (height*width); i++) {
-        origImageBytes[i*3] = 67;
-        origImageBytes[i*3+1] = 76;
-        origImageBytes[i*3+2] = 243;
-    }
-
-    long sumOfAllImageBytes = 0;
-    for(int i = 0; i < numberOfImageBytes; i++) {
-        sumOfAllImageBytes += origImageBytes[i];
-    }
-    printf("starting encryption");
-
-    clock_t begin = clock();
-    runAlgorithm(ENC_MODE, origImageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, 1);
-    clock_t end = clock();
-    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-
-    printf("\nResult: took %0.15f seconds\n", time_spent);
-}
-
 
 int main(int argc, char* argv[]) {
     PermutationSetup permSetups[4];
@@ -234,8 +201,6 @@ int main(int argc, char* argv[]) {
     test5x5ImageDecryption(permSetups, diffuSetups);
     test2x3ImageEncryption(permSetups, diffuSetups);
     test2x3ImageDecryption(permSetups, diffuSetups);
-
-    //testExecutionTime(permSetups, diffuSetups); 
 
     return 0;
 }

@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1497000284 source:/home/franz/Documents/imagecipher2/imagecipher2.c
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<math.h>
+	"imagecipher2.h"
+
+1497000827 /home/franz/Documents/imagecipher2/imagecipher2.h
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<math.h>
+
