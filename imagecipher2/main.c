@@ -5,7 +5,6 @@
 #include "imagecipher2.h"
 
 #define MAX_FILE_PATH_LENGTH 512
-#define BUFFER_SIZE 256
 
 int main(int argc, char* argv[]) {
 
@@ -27,7 +26,7 @@ int main(int argc, char* argv[]) {
 
     char convFilePath[MAX_FILE_PATH_LENGTH+15];
     strcpy(convFilePath, filePath);
-    strcat(convFilePath, ".encrypted.png");
+    strcat(convFilePath, ".encrypted.txt");
 
     unsigned char buffer[BUFFER_SIZE];
 
@@ -37,21 +36,64 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    FILE *convFile = fopen(convFilePath, "wb");
+    FILE *convFile = fopen(convFilePath, "w");
     if (convFile == NULL) {
         fprintf(stderr, "Can't open output file %s!\n", convFilePath);
         exit(1);
     }
 
-    while(fread(buffer, sizeof(unsigned char), BUFFER_SIZE, origFile) > 0) {
-        PTF_IMPT("------ READ: %s ------ \n", buffer);
-        fwrite(buffer, sizeof(unsigned char), BUFFER_SIZE, convFile);
+
+
+    unsigned char key[KEY_SIZE];
+    strcpy(key, "1234578901234567890123456789012");
+
+    PTF("------ READING: ");
+
+    int block = 0;
+    int value;
+    fscanf(origFile, "%d", &value);
+
+    while(!feof(origFile)) {
+        int bufferPos = 0;
+
+        PTF("\n---- Block %d: ", block);
+
+        while(bufferPos < BUFFER_SIZE){
+            buffer[bufferPos] = (unsigned char)value;
+            PTF("%u ", buffer[bufferPos]);
+
+            if(feof(origFile))
+                break;
+
+            fscanf(origFile, "%d", &value);
+            bufferPos++;
+        }
+
+        // TODO: encrypt/decrypt
+
+        for(int i = 0; i < BUFFER_SIZE; i++)
+            fprintf(convFile, "%d ", (int)buffer[i]);
+
+        block++;
     }
 
-    PTF_IMPT("created file %s\n", convFilePath);
+    PTF("\n------ DONE ------- \n");
 
-    fclose(origFile);
+    /* reading file byte by byte
+    PTF("------ READING: \n");
+    while(fread(buffer, sizeof(unsigned char), BUFFER_SIZE, origFile) > 0) {
+        for(int i = 0; i < BUFFER_SIZE; i++)
+            PTF("%d ", buffer[i]);
+        //runAlgorithm()
+        fwrite(buffer, sizeof(unsigned char), BUFFER_SIZE, convFile);
+    }
+    PTF("\n------ DONE ------- \n");
+    */
+
+    PTF_IMPT("created file: %s\n", convFilePath);
+
     fclose(convFile);
+    fclose(origFile);
 
     /*argv[1] = "../../5x5image.jpgbytes.txt\0";
     argv[2] = "75";

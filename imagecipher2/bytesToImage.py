@@ -15,12 +15,12 @@ print array
 
 data = [];
 
-for i in range(0, len(array)/3):
-    data.append(tuple([array[i*3], array[(i*3)+1], array[(i*3)+2]]))
+for i in range(0, len(array)/4):
+    data.append(tuple([array[i*4], array[(i*4)+1], array[(i*4+2)], array[(i*4+3)]]))
 
 print len(data)
 print data
 
-im = Image.new("RGB", (width, height))
+im = Image.new("RGBA", (width, height))
 im.putdata(data)
-im.save(filename + ".decrypted", "JPEG")
+im.save(filename + ".decrypted.png", "PNG")

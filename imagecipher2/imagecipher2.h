@@ -6,6 +6,9 @@
 #define DEV 1
 #define TEST 1
 
+#define BUFFER_SIZE 4
+#define KEY_SIZE 32 // as unsigned char array = 256 bit
+
 #ifdef DEV
     #define PTF(A,...) printf(A,##__VA_ARGS__);
 #else
@@ -21,6 +24,14 @@
 static int ENC_MODE = 1;
 static int DEC_MODE = 2;
 
+typedef struct AlgorithmParameters {
+    double X;
+    double C;
+} AlgorithmParameter;
+
+AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]);
+AlgorithmParameter encrypt(AlgorithmParameter params, unsigned char imageBytes[BUFFER_SIZE], unsigned char key[KEY_SIZE]);
+
 typedef struct PermutationSetups {
     double r; // 3.6 <= r <= 4.0
     double x; // 0 < x < 1
@@ -31,5 +42,3 @@ typedef struct DiffusionSetups {
     double y; // 0 < y < 1
     double x; // 0 < x < 1
 } DiffusionSetup;
-
-void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permutationSetups[4], DiffusionSetup diffusionSetups[2], int encryptionRounds);
