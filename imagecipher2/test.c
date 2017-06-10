@@ -5,10 +5,9 @@
 #include "imagecipher2.h"
 #include "time.h"
 
+void test2x4ImageEncryption() {
 
-void test2x8ImageEncryption() {
-
-    printf("\n---- test2x8ImageEncryption ----");
+    printf("\n---- test2x4ImageEncryption ----");
 
     unsigned char key[] = {
         49, 50, 51, 52, 53, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55,
@@ -17,13 +16,12 @@ void test2x8ImageEncryption() {
 
     unsigned char origImageBytes[] = {
         66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255,
-        66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255,
+        66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255
     };
 
     unsigned char expectedEncryptedImageBytes[] = {
-        145, 105, 220, 160, 194, 136, 240, 174, 201, 135, 235, 167, 192, 134, 237, 172,
-        202, 138, 233, 165, 193, 134, 237, 173, 200, 139, 241, 170, 194, 133, 208, 120
-
+        145, 105, 217, 153, 191, 133, 236, 170, 192, 129, 230, 170, 198, 142, 241, 173, 
+        203, 135, 234, 167, 193, 134, 236, 174, 200, 139, 241, 168, 196, 134, 205, 149
     };
 
     int numberOfImageBytes = 32;
@@ -73,10 +71,249 @@ void test2x8ImageEncryption() {
     printf(" Result: %s ----\n", result);
 }
 
+void test2x4ImageDecryption() {
+
+    printf("\n---- test2x4ImageDecryption ----");
+
+    unsigned char key[] = {
+        49, 50, 51, 52, 53, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55,
+        56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 0
+    };
+
+    unsigned char encrypted[] = {
+        145, 105, 217, 153, 191, 133, 236, 170, 192, 129, 230, 170, 198, 142, 241, 173, 
+        203, 135, 234, 167, 193, 134, 236, 174, 200, 139, 241, 168, 196, 134, 205, 149
+    };
+
+    unsigned char expectedDecrypted[] = {
+        66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255,
+        66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255 
+    };
+
+    int numberOfImageBytes = 32;
+
+    PTF("key: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", key[i]);
+    }
+    PTF("\n--------\n")
+
+    PTF("encrypted: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", encrypted[i]);
+    }
+    PTF("\n--------\n")
+
+    PTF("expectedDecrypted: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", expectedDecrypted[i]);
+    }
+    PTF("\n--------\n")
+
+    AlgorithmParameter params = generateInitialContitions(key);
+
+    PTF("\nParams: c = %d, x = %0.15f\n", params.C, params.X);
+
+    decrypt(&params, encrypted, numberOfImageBytes, key);
+
+    PTF("actual: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", encrypted[i]);
+    }
+    PTF("\n--------\n")
+
+    PTF("Done decrypting");
+
+    char *result = "success";
+
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        if(encrypted[i] != expectedDecrypted[i]) {
+            result = "failure";
+            PTF("error at byte %d, expected: %u, actual %u", i, expectedDecrypted[i], encrypted[i]);
+            break;
+        }
+    }
+
+    printf(" Result: %s ----\n", result);
+}
+
+void test3x3ImageEncryption() {
+
+    printf("\n---- test3x3ImageEncryption ----");
+
+    unsigned char key[] = {
+        49, 50, 51, 52, 53, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55,
+        56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 0
+    };
+
+    unsigned char origImageBytes[] = {
+        66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255, 
+        66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255, 
+        66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255
+    };
+
+    unsigned char expectedEncryptedImageBytes[] = {
+        145, 105, 217, 153, 191, 133, 236, 170, 192, 129, 230, 170, 
+        198, 142, 241, 173, 203, 135, 234, 167, 193, 134, 236, 174, 
+        200, 139, 241, 168, 196, 134, 205, 149, 183, 127, 229, 166
+    };
+
+    int numberOfImageBytes = 3*3*4;
+
+    PTF("key: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", key[i]);
+    }
+    PTF("\n--------\n")
+
+    PTF("origImageBytes: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", origImageBytes[i]);
+    }
+    PTF("\n--------\n")
+
+    PTF("expectedEncryptedImageBytes: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", expectedEncryptedImageBytes[i]);
+    }
+    PTF("\n--------\n")
+
+    char *result = "success";
+
+    AlgorithmParameter params = generateInitialContitions(key);
+
+    int block = 0;
+    int blockPos;
+    int bytesProcessed = 0;
+
+    while(block < 2) {
+
+        PTF("\n-------- running block %d\n", block);
+        blockPos = 0;
+        unsigned char buffer[BUFFER_SIZE];
+        while(blockPos < BUFFER_SIZE && bytesProcessed < numberOfImageBytes) {
+            buffer[blockPos] = origImageBytes[bytesProcessed];
+            blockPos++;
+            bytesProcessed++;
+        }
+
+        PTF("\n%d. Params: c = %d, x = %0.15f, bytes = %d\n", block, params.C, params.X, blockPos);
+        encrypt(&params, buffer, blockPos, key);
+
+        PTF("actual: \n")
+        for(int i = 0; i < blockPos; i++) {
+            PTF("%u ", buffer[i]);
+        }
+        PTF("\n--------\n");
+
+        PTF("Done encrypting block %d\n", block);
+
+        for(int i = 0; i < blockPos; i++) {
+            if(buffer[i] != expectedEncryptedImageBytes[block*BUFFER_SIZE+i]) {
+                result = "failure";
+                PTF("error at byte %d, expected: %u, actual %u", i, expectedEncryptedImageBytes[block*BUFFER_SIZE+i], buffer[i]);
+                break;
+            }
+        }
+
+        block++;
+    }
+
+    printf(" Result: %s ----\n", result);
+}
+
+void test3x3ImageDecryption() {
+
+    printf("\n---- test3x3ImageDecryption ----");
+
+    unsigned char key[] = {
+        49, 50, 51, 52, 53, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55,
+        56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 0
+    };
+
+    unsigned char expectedDecrypted[] = {
+        66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255, 
+        66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255, 
+        66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255
+    };
+
+    unsigned char encryptedBytes[] = {
+        145, 105, 217, 153, 191, 133, 236, 170, 192, 129, 230, 170, 
+        198, 142, 241, 173, 203, 135, 234, 167, 193, 134, 236, 174, 
+        200, 139, 241, 168, 196, 134, 205, 149, 183, 127, 229, 166
+    };
+
+    int numberOfImageBytes = 3*3*4;
+
+    PTF("key: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", key[i]);
+    }
+    PTF("\n--------\n")
+
+    PTF("encryptedBytes: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", encryptedBytes[i]);
+    }
+    PTF("\n--------\n")
+
+    PTF("expectedDecrypted: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", expectedDecrypted[i]);
+    }
+    PTF("\n--------\n")
+
+    char *result = "success";
+
+    AlgorithmParameter params = generateInitialContitions(key);
+
+    int block = 0;
+    int blockPos;
+    int bytesProcessed = 0;
+
+    while(block < 2) {
+
+        PTF("\n-------- running block %d\n", block);
+        blockPos = 0;
+        unsigned char buffer[BUFFER_SIZE];
+        while(blockPos < BUFFER_SIZE && bytesProcessed < numberOfImageBytes) {
+            buffer[blockPos] = encryptedBytes[bytesProcessed];
+            blockPos++;
+            bytesProcessed++;
+        }
+
+        PTF("\n%d. Params: c = %d, x = %0.15f, bytes = %d\n", block, params.C, params.X, blockPos);
+        decrypt(&params, buffer, blockPos, key);
+
+        PTF("actual: \n")
+        for(int i = 0; i < blockPos; i++) {
+            PTF("%u ", buffer[i]);
+        }
+        PTF("\n--------\n");
+
+        PTF("Done decrypting block %d\n", block);
+
+        for(int i = 0; i < blockPos; i++) {
+            if(buffer[i] != expectedDecrypted[block*BUFFER_SIZE+i]) {
+                result = "failure";
+                PTF("error at byte %d, expected: %u, actual %u", i, expectedDecrypted[block*BUFFER_SIZE+i], buffer[i]);
+                break;
+            }
+        }
+
+        block++;
+    }
+
+    printf(" Result: %s ----\n", result);
+}
 
 int main(int argc, char* argv[]) {
 
-    test2x8ImageEncryption(); 
+    test2x4ImageEncryption(); 
+    test2x4ImageDecryption(); 
+
+    test3x3ImageEncryption(); 
+    test3x3ImageDecryption();
 
     return 0;
 }

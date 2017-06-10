@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define DEV 1
+//#define DEV 1
 #define TEST 1
 
 #ifndef __STDC_IEC_559__
@@ -13,13 +13,13 @@
 #define BUFFER_SIZE 32
 #define KEY_SIZE 32 // as unsigned char array = 256 bit
 
-#ifdef DEV
+#if(DEV == 1)
     #define PTF(A,...) printf(A,##__VA_ARGS__);
 #else
     #define PTF(A,...) do {} while(0);
 #endif
 
-#ifdef TEST
+#if(TEST == 1)
     #define PTF_IMPT(A,...) printf(A,##__VA_ARGS__);
 #else
     #define PTF_IMPT(A,...) do {} while(0);

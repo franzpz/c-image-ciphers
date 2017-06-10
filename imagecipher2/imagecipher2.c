@@ -43,10 +43,7 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
         x = ((double)x + (double)lastC + (double)key[l]) / DIVISOR_M1;
         x = round(x * PRECISION) / PRECISION;
 
-        if(l == numberOfImageBytes - 1)
-            numberOfLogisticMapRepititions = 0 + lastC;
-        else
-            numberOfLogisticMapRepititions = key[nextKeyPos] + lastC;
+        numberOfLogisticMapRepititions = key[nextKeyPos] + lastC;
 
         xn = x;
         logisticSum = 0.0;
@@ -58,6 +55,9 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
         imageBytes[l] = (((int)imageBytes[l]) + (((int)logisticSum)%256)) % 256;
         lastC = imageBytes[l];
     }
+
+    params->X = x;
+    params->C = lastC;
 }
 
 void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char key[KEY_SIZE]) {
@@ -71,15 +71,15 @@ void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
     double xn;
     double logisticSum;
     int numberOfLogisticMapRepititions;
+    int nextKeyPos;
 
     for(int l = 0; l < BUFFER_SIZE; l++) {
+        nextKeyPos = (l+1) % KEY_SIZE;
+
         x = ((double)x + (double)lastC + (double)key[l]) / DIVISOR_M1;
         x = round(x * PRECISION) / PRECISION;
 
-        if(l == numberOfImageBytes - 1)
-            numberOfLogisticMapRepititions = 0 + lastC;
-        else
-            numberOfLogisticMapRepititions = key[l+1] + lastC;
+        numberOfLogisticMapRepititions = key[nextKeyPos] + lastC;
 
         xn = x;
         logisticSum = 0.0;
@@ -91,4 +91,7 @@ void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
         lastC = imageBytes[l];
         imageBytes[l] = (((int)imageBytes[l]) - (((int)logisticSum)%256)) % 256;
     }
+
+    params->X = x;
+    params->C = lastC;
 }
