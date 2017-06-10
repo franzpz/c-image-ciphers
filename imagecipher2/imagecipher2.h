@@ -6,6 +6,10 @@
 #define DEV 1
 #define TEST 1
 
+#ifndef __STDC_IEC_559__
+    #define __STDC_IEC_559__ 1
+#endif
+
 #define BUFFER_SIZE 256
 #define KEY_SIZE 32 // as unsigned char array = 256 bit
 
@@ -30,4 +34,5 @@ typedef struct AlgorithmParameters {
 } AlgorithmParameter;
 
 AlgorithmParameter generateInitialContitions(unsigned char *key);
-void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, unsigned char *key);
+void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char *key);
+void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char *key);

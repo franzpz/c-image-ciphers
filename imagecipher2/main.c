@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -7,6 +6,8 @@
 #define MAX_FILE_PATH_LENGTH 512
 
 int main(int argc, char* argv[]) {
+
+    int mode = DEC_MODE;
 
     if(argc < 2) {
         printf("no file provided path provided");
@@ -26,7 +27,13 @@ int main(int argc, char* argv[]) {
 
     char convFilePath[MAX_FILE_PATH_LENGTH+15];
     strcpy(convFilePath, filePath);
-    strcat(convFilePath, ".encrypted.txt");
+
+    if(mode == DEC_MODE) {
+        strcat(convFilePath, ".decrypted.txt");
+    }
+    else if(mode == ENC_MODE){
+        strcat(convFilePath, ".encrypted.txt");
+    }
 
     unsigned char buffer[BUFFER_SIZE];
 
@@ -72,13 +79,23 @@ int main(int argc, char* argv[]) {
         }
 
         PTF("] ----\n")
-        PTF("\n---- Starting encryption ----\n");
+        if(mode == DEC_MODE) {
+            PTF("\n---- Starting decryption ----\n");
+        }
+        else if(mode == ENC_MODE){
+            PTF("\n---- Starting encryption ----\n");
+        }
 
         // TODO: encrypt/decrypt
         AlgorithmParameter params = generateInitialContitions(key);
 
         PTF("---- using initial parameters: X= %0.15f, C= %d \n", params.X, params.C);
-        encrypt(&params, buffer, key);
+        if(mode == DEC_MODE) {
+            decrypt(&params, buffer, bufferPos, key);
+        }
+        else if(mode == ENC_MODE){
+            encrypt(&params, buffer, bufferPos, key);
+        }
 
         PTF("\n---- Writing Block %d: [", block);
         for(int i = 0; i < bufferPos; i++) {

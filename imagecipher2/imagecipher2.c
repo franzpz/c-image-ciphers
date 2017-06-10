@@ -5,6 +5,8 @@
 #include "imagecipher2.h"
 
 static double LOGISTIC_R = 3.9;
+static double DIVISOR_M1 = 1000.0;
+static double PRECISION = 10000000000.0;
 
 AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     AlgorithmParameter param;
@@ -22,27 +24,68 @@ AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     return param;
 }
 
-void encrypt(AlgorithmParameter *params, unsigned char imageBytes[BUFFER_SIZE], unsigned char key[KEY_SIZE]) {
+void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char key[KEY_SIZE]) {
+
+    if(numberOfImageBytes > BUFFER_SIZE)
+        exit(1);
 
     double x = params->X;
     unsigned char lastC = params->C;
 
-    long double xn;
-    long double logisticSum;
+    double xn;
+    double logisticSum;
     int numberOfLogisticMapRepititions;
 
-    for(int l = 0; l < BUFFER_SIZE; l++) {
-        x = ((double)(x+(double)lastC+(double)key[l]))/1000.0;
-        numberOfLogisticMapRepititions = key[l+1] + lastC;
+    for(int l = 0; l < numberOfImageBytes; l++) {
+        x = ((double)x + (double)lastC + (double)key[l]) / DIVISOR_M1;
+        x = round(x * PRECISION) / PRECISION;
+
+        if(l == numberOfImageBytes - 1)
+            numberOfLogisticMapRepititions = 0 + lastC;
+        else
+            numberOfLogisticMapRepititions = key[l+1] + lastC;
 
         xn = x;
         logisticSum = 0.0;
         for(int i = 0; i < numberOfLogisticMapRepititions; i++) {
-            xn = LOGISTIC_R * xn * (1 - xn);
+            xn = LOGISTIC_R * xn * (1.0 - xn);
             logisticSum += xn;
         }
 
-        imageBytes[l] = (imageBytes[l] + (((int)logisticSum)%256)) % 256;
+        imageBytes[l] = (((int)imageBytes[l]) + (((int)logisticSum)%256)) % 256;
         lastC = imageBytes[l];
+    }
+}
+
+void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char key[KEY_SIZE]) {
+
+    if(numberOfImageBytes > BUFFER_SIZE)
+        exit(1);
+
+    double x = params->X;
+    unsigned char lastC = params->C;
+
+    double xn;
+    double logisticSum;
+    int numberOfLogisticMapRepititions;
+
+    for(int l = 0; l < BUFFER_SIZE; l++) {
+        x = ((double)x + (double)lastC + (double)key[l]) / DIVISOR_M1;
+        x = round(x * PRECISION) / PRECISION;
+
+        if(l == numberOfImageBytes - 1)
+            numberOfLogisticMapRepititions = 0 + lastC;
+        else
+            numberOfLogisticMapRepititions = key[l+1] + lastC;
+
+        xn = x;
+        logisticSum = 0.0;
+        for(int i = 0; i < numberOfLogisticMapRepititions; i++) {
+            xn = LOGISTIC_R * xn * (1.0 - xn);
+            logisticSum += xn;
+        }
+
+        lastC = imageBytes[l];
+        imageBytes[l] = (((int)imageBytes[l]) - (((int)logisticSum)%256)) % 256;
     }
 }

@@ -11,7 +11,8 @@ void test2x8ImageEncryption() {
     printf("\n---- test2x8ImageEncryption ----");
 
     unsigned char key[] = {
-        49, 50, 51, 52, 53, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 0
+        49, 50, 51, 52, 53, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55,
+        56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 0
     };
 
     unsigned char origImageBytes[] = {
@@ -20,16 +21,42 @@ void test2x8ImageEncryption() {
     };
 
     unsigned char expectedEncryptedImageBytes[] = {
-        145, 105, 220, 160, 194, 136, 240, 174, 201, 135, 235, 167, 192, 134, 237, 172, 
+        145, 105, 220, 160, 194, 136, 240, 174, 201, 135, 235, 167, 192, 134, 237, 172,
         202, 138, 233, 165, 193, 134, 237, 173, 200, 139, 241, 170, 194, 133, 208, 120
 
     };
 
     int numberOfImageBytes = 32;
 
+    PTF("key: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", key[i]);
+    }
+    PTF("\n--------\n")
+
+    PTF("origImageBytes: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", origImageBytes[i]);
+    }
+    PTF("\n--------\n")
+
+    PTF("expectedEncryptedImageBytes: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", expectedEncryptedImageBytes[i]);
+    }
+    PTF("\n--------\n")
+
     AlgorithmParameter params = generateInitialContitions(key);
 
-    encrypt(&params, origImageBytes, key);
+    PTF("\nParams: c = %d, x = %0.15f\n", params.C, params.X);
+
+    encrypt(&params, origImageBytes, numberOfImageBytes, key);
+
+    PTF("actual: \n")
+    for(int i = 0; i < numberOfImageBytes; i++) {
+        PTF("%u ", origImageBytes[i]);
+    }
+    PTF("\n--------\n")
 
     PTF("Done encrypting");
 
