@@ -4,9 +4,9 @@
 #include <math.h>
 #include "imagecipher2.h"
 
-static double LOGISTIC_R = 3.9;
+static double LOGISTIC_R = 3.734568;
 static double DIVISOR_M1 = 1000.0;
-static double PRECISION = 10000000000.0;
+static double PRECISION = 10000000000000.0;
 
 AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     AlgorithmParameter param;
@@ -20,6 +20,13 @@ AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     }
 
     param.X = r - floor(r);
+    double xn = param.X;
+
+    // skip first 1000 Logistic Map repititions
+    for(int i = 0; i < 1000; i++)
+        xn = LOGISTIC_R * xn * (1.0 - xn);
+
+    param.X = xn;
 
     return param;
 }
