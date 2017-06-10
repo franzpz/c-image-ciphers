@@ -7,10 +7,8 @@
 
 int main(int argc, char* argv[]) {
 
-    int mode = DEC_MODE;
-
-    if(argc < 2) {
-        printf("no file provided path provided");
+    if(argc < 3) {
+        printf("no file path provided and/or mode 1 = encryption, 2 = decryption, usage <path> <mode>");
         exit(1);
     }
 
@@ -22,6 +20,8 @@ int main(int argc, char* argv[]) {
     }
     else
         strcpy(filePath, argv[1]);
+
+    int mode = atoi(argv[2]);
 
     PTF_IMPT("\nusing file: %s\n", filePath);
 

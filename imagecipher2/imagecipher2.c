@@ -35,15 +35,18 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
     double xn;
     double logisticSum;
     int numberOfLogisticMapRepititions;
+    int nextKeyPos;
 
     for(int l = 0; l < numberOfImageBytes; l++) {
+        nextKeyPos = (l+1) % KEY_SIZE;
+
         x = ((double)x + (double)lastC + (double)key[l]) / DIVISOR_M1;
         x = round(x * PRECISION) / PRECISION;
 
         if(l == numberOfImageBytes - 1)
             numberOfLogisticMapRepititions = 0 + lastC;
         else
-            numberOfLogisticMapRepititions = key[l+1] + lastC;
+            numberOfLogisticMapRepititions = key[nextKeyPos] + lastC;
 
         xn = x;
         logisticSum = 0.0;

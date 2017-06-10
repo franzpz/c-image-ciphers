@@ -29,4 +29,14 @@ for j in range(0, 8):
 		data.append(tuple([66, 244, 125, 255]))
 
 im.putdata(data)
-im.save(str(2) + "x" + str(8) + basicFilename, "PNG")
+im.save(str(2) + "x" + str(4) + basicFilename, "PNG")
+
+
+
+im = Image.new("RGBA", (3, 3))
+data = [];
+for j in range(0, 9):
+		data.append(tuple([66, 244, 125, 255]))
+
+im.putdata(data)
+im.save(str(3) + "x" + str(3) + basicFilename, "PNG")

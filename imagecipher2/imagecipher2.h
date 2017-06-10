@@ -10,7 +10,7 @@
     #define __STDC_IEC_559__ 1
 #endif
 
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 32
 #define KEY_SIZE 32 // as unsigned char array = 256 bit
 
 #ifdef DEV
