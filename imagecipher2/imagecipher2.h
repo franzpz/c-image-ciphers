@@ -36,3 +36,6 @@ typedef struct AlgorithmParameters {
 AlgorithmParameter generateInitialContitions(unsigned char *key);
 void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char *key);
 void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char *key);
+
+unsigned char convertM2(double x);
+double convertM1(double x);

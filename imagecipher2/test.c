@@ -307,6 +307,35 @@ void test3x3ImageDecryption() {
     printf(" Result: %s ----\n", result);
 }
 
+void testConvertM1AndM2() {
+    printf("\n---- testConvertM1AndM2 ----");
+
+    int imageBytes[] = {
+        0, 5, 10, 134, 254, 255
+    };
+
+    double expectedX[] = {
+        0.0, 0.01960784313, 0.03921568627, 0.52549019607, 0.99607843137, 1.0
+    };
+
+    char *result = "success";
+
+    for(int i = 0; i < 6; i++) {
+        double actual = convertM1(imageBytes[i]);
+
+        int m = actual * 100000000000;
+        int k = expectedX[i] * 100000000000;
+
+        if(m != k) {
+            result = "failure";
+            PTF("error at %d, expected: %d, actual: %d\n", i, k, m);
+            break;
+        }
+    }
+
+    printf(" Result: %s ----\n", result);
+}
+
 int main(int argc, char* argv[]) {
 
     test2x4ImageEncryption(); 
@@ -314,6 +343,8 @@ int main(int argc, char* argv[]) {
 
     test3x3ImageEncryption(); 
     test3x3ImageDecryption();
+
+    testConvertM1AndM2();
 
     return 0;
 }

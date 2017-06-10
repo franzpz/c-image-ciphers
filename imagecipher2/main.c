@@ -77,6 +77,10 @@ int main(int argc, char* argv[]) {
     int value;
     fscanf(origFile, "%d", &value);
 
+    double timeTakenAlgorithmOnly = 0.0;
+
+    AlgorithmParameter params = generateInitialContitions(key);
+
     clock_t begin = clock();
 
     while(!feof(origFile)) {
@@ -103,7 +107,7 @@ int main(int argc, char* argv[]) {
             PTF("\n---- Starting encryption ----\n");
         }
 
-        AlgorithmParameter params = generateInitialContitions(key);
+        clock_t begin_algo = clock();
 
         PTF("---- using initial parameters: X= %0.15f, C= %d \n", params.X, params.C);
         if(mode == DEC_MODE) {
@@ -112,6 +116,9 @@ int main(int argc, char* argv[]) {
         else if(mode == ENC_MODE){
             encrypt(&params, buffer, bufferPos, key);
         }
+
+        clock_t end_algo = clock();
+        timeTakenAlgorithmOnly += (double)(end_algo - begin_algo) / CLOCKS_PER_SEC;
 
         PTF("\n---- Writing Block %d: [", block);
         for(int i = 0; i < bufferPos; i++) {
@@ -128,7 +135,8 @@ int main(int argc, char* argv[]) {
     clock_t end = clock();
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
-    PTF_IMPT("\ntook %0.15f seconds\n", time_spent);
+    PTF_IMPT("\ntook total %0.15f seconds\n", time_spent);
+    PTF_IMPT("\ntook algo only %0.15f seconds\n", timeTakenAlgorithmOnly);
 
     PTF_IMPT("created file: %s\n", convFilePath);
 

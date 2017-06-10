@@ -21,6 +21,10 @@ for i in range(0, len(array)/3):
 print len(data)
 """print data"""
 
+newFile = filename + ".png"
+
 im = Image.new("RGB", (width, height))
 im.putdata(data)
-im.save(filename + ".decrypted.png", "PNG")
+im.save(newFile, "PNG")
+
+print "created " + newFile

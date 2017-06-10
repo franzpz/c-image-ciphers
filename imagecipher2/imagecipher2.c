@@ -4,9 +4,42 @@
 #include <math.h>
 #include "imagecipher2.h"
 
-static double LOGISTIC_R = 3.734568;
+static double LOGISTIC_R = 3.900000000000;
 static double DIVISOR_M1 = 1000.0;
 static double PRECISION = 10000000000000.0;
+
+unsigned char convertM2(double x) {
+
+    //return ((int)x) % 256;
+    static double minLogistic = 0.0;
+    static double maxLogistic = 1.0;
+    static double rangeLogistic = 1.0 - 0.0;
+
+    static double minImage = 0.0;
+    static double maxImage = 255.0;
+    static double rangeImage = 255.0 - 0.0;
+
+    while(x > maxLogistic)
+        x = x/10.0;
+
+    return (unsigned char)((((x - minLogistic) * rangeImage) / rangeLogistic) + minImage);
+
+    //return (unsigned char)(((int)((((x - minLogistic) * rangeImage) / rangeLogistic) + minImage)) % 256);
+}
+
+double convertM1(double x) {
+    static double minLogistic = 0.0;
+    static double maxLogistic = 1.0;
+    static double rangeLogistic = 1.0 - 0.0;
+
+    static double minImage = 0.0;
+    static double maxImage = 255.0;
+    static double rangeImage = 255.0 - 0.0;
+
+    x = ((int)x) % 256;
+
+    return (double)((((x - minImage) * rangeLogistic) / rangeImage) + minLogistic);
+}
 
 AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     AlgorithmParameter param;
@@ -15,7 +48,8 @@ AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     param.C = 0;
 
     for(int i = 0; i < KEY_SIZE; i++) {
-        r += ((double)key[i])/1000.0;
+        //r += ((double)key[i])/1000.0;
+        r += ((double)key[i]) / DIVISOR_M1;
         param.C = (param.C + key[i]) % 256;
     }
 
@@ -23,8 +57,8 @@ AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     double xn = param.X;
 
     // skip first 1000 Logistic Map repititions
-    for(int i = 0; i < 1000; i++)
-        xn = LOGISTIC_R * xn * (1.0 - xn);
+    /*for(int i = 0; i < 1000; i++)
+        xn = LOGISTIC_R * xn * (1.0 - xn);*/
 
     param.X = xn;
 
@@ -47,8 +81,9 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
     for(int l = 0; l < numberOfImageBytes; l++) {
         nextKeyPos = (l+1) % KEY_SIZE;
 
-        x = ((double)x + (double)lastC + (double)key[l]) / DIVISOR_M1;
-        x = round(x * PRECISION) / PRECISION;
+        //x = convertM1((double)x +(double)lastC+(double)key[l]);
+        x = ((double)x +(double)lastC+(double)key[l]) / DIVISOR_M1;
+        //x = round(x * PRECISION) / PRECISION;
 
         numberOfLogisticMapRepititions = key[nextKeyPos] + lastC;
 
@@ -59,7 +94,8 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
             logisticSum += xn;
         }
 
-        imageBytes[l] = (((int)imageBytes[l]) + (((int)logisticSum)%256)) % 256;
+        imageBytes[l] = (((int)imageBytes[l]) + ((int)logisticSum % 256)) % 256;
+        //imageBytes[l] = (((int)imageBytes[l]) + convertM2(logisticSum)) % 256;
         lastC = imageBytes[l];
     }
 
