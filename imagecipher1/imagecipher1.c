@@ -4,13 +4,21 @@
 #include <math.h>
 #include "imagecipher1.h"
 
+// helper functions
 void printSequence(double a[], long n);
 void sort(double a[], long n);
 int find(double array[], double data, long length);
 
+// actual cipher functions
+// create permutation sequence based on logistic map
 void createPermutationSequence(int permutationSequence[], double r, double x, long sequenceLength);
+// generate permutation parameters based on image values
 double generateControlParametersLogisticMap(double basicR, double avgOfImageByteSum, long numberOfImageBytes);
+
+// create diffusion sequence based on Ikeda map, generates two sequences at a time mOneSequence and mTwoSequence
 void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], long sequenceLength);
+
+// generate diffustion parameters based on image values
 double generateControlParametersIkedaMap(double miu, double avgOfImageByteSum, long numberOfImageBytes);
 
 void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permutationSetups[4], DiffusionSetup diffusionSetups[2], int encryptionRounds) {
@@ -233,9 +241,6 @@ void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned ch
             absY = fabs(yn);
             mOneSequence[i-entriesToSkip] = ((long long)((absX - ((double)floor(absX))) * multiply)) % 255;
             mTwoSequence[i-entriesToSkip] = ((long long)((absY - ((double)floor(absY))) * multiply)) % 255;
-
-            //PTF("%d - xn: %.20f yn: %.20f m1: %d\n", i, xn, yn, mOneSequence[i-entriesToSkip]);
-            //PTF("%d - xn: %.20f yn: %.20f m1: %d\n", i, xn, yn, mTwoSequence[i-entriesToSkip]);
         }
     }
 }
@@ -379,6 +384,7 @@ void sort(double array[], long n){
     }
 }
 
+// binary search
 int find(double array[], double data, long length) {
    int lowerBound = 0;
    int upperBound = length -1;

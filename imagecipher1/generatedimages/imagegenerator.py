@@ -4,7 +4,7 @@ import sys
 basicFilename = "image.png";
 
 for i in range(2, 300, 10):
-	im = Image.new("RGBA", (i, i))
+	im = Image.new("RGB", (i, i))
 	data = [];
 	for j in range(0, i*i):
 		if (i%2) == 0:

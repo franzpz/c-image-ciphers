@@ -2,96 +2,67 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <gmp.h>
 #include "imagecipher1.h"
 
 
 
 int main(int argc, char* argv[]) {
 
-    /*argv[1] = "../../5x5image.jpgbytes.txt\0";
-    argv[2] = "75";
-    argc = 3;
+    long sumOfAllImageBytes = 0;
 
-    int maxFilePathLength = 100;
+    // for the encryption we need the size of the image
+    // and for the decryption we need the sum of the image bytes of the plain image,
+    // therefore I inserted this testdata below
 
-    if(argc < 3)
-        return -1;
+    // usage:
+    // uncomment the block you want to test, we currently have orig 2x3 uncommented, which encrypts the given bytes
+    // the bytes are RGB values of the pixel of an image
 
-    char filePath[maxFilePathLength];
-    //char *filePath = "../../5x5image.jpgbytes.txt";
+/*    // orig 5x5
+    int mode = ENC_MODE;
+    int imageH = 5;
+    int imageW = 5;
+    unsigned char imageBytes[] = {
+		67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76,
+		243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67,
+		76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243, 67, 76, 243,
+		67, 76, 243, 67, 76, 243,
+    };
 
-    if (strlen(argv[1]) >= maxFilePathLength)
-        fprintf(stderr, "%s is too long!\n", argv[1]);
-    else
-        strcpy(filePath, argv[1]);
-
-    PTF_IMPT("\nusing file: %s\n", filePath);
-
-    int numberOfImageBytes;
-    sscanf (argv[2],"%d",&numberOfImageBytes);
-
-    PTF_IMPT("\nnumber of bytes: %d\n", numberOfImageBytes);
-
-    FILE *myFile;
-    myFile = fopen(filePath, "r");
-
-    //read file into array
-    unsigned char imageBytes[numberOfImageBytes];
-    int i;
-
-    for (i = 0; i < numberOfImageBytes; i++)
-    {
-        fscanf(myFile, "%d", &imageBytes[i]);
-    }
-
-    free(myFile);
-
-    #ifdef DEV
-    PTF("\n------- Number is: [");
-    for (int i = 0; i < numberOfImageBytes; i++)
-    {
-        PTF("%d, ", imageBytes[i]);
-    }
-    PTF("] -------- \n");
-    #endif // DEV
+    // enc 5x5 2 rounds
+    sumOfAllImageBytes = 9650;
+    int mode = DEC_MODE;
+    int imageH = 5;
+    int imageW = 5;
+    unsigned char imageBytes[] = {
+        9, 29, 41, 153, 71, 68, 153, 25, 162, 182, 26, 67, 154, 91, 99, 92, 44, 239, 174, 125, 56, 98, 193,
+        32, 62, 97, 62, 34, 80, 193, 83, 6, 243, 116, 70, 84, 10, 172, 144, 168, 176, 134, 110, 204, 252, 41,
+        142, 66, 156, 210, 85, 8, 193, 122, 57, 128, 124, 152, 158, 247, 15, 16, 177, 242, 206, 232, 176, 174,
+        41, 223, 102, 186, 125, 112, 29
+    };
 */
-    // image data
- /*
-    // orig 5x4
-    unsigned char imageBytes[] = {
-		215, 59, 230, 206, 50, 221, 209, 53, 224, 213, 57, 228, 205, 52, 222, 201, 48, 218, 191,
-		39, 209, 194, 41, 211, 196, 44, 214, 188, 36, 206, 191, 44, 212, 181, 36, 203, 184, 37,
-		205, 187, 42, 209, 179, 34, 201, 185, 44, 210, 176, 37, 202, 181, 40, 206, 185, 46, 211,
-		180, 39, 205, 178, 43, 207, 168, 36, 199, 176, 41, 205, 179, 47, 210, 176, 41, 205
-    };
-
-    enc 5x5 10 rounds
-    unsigned char imageBytes[] = {
-        47, 205, 43, 201, 194, 36, 53, 181, 230, 205, 205, 199, 228, 224, 211, 207, 39, 209, 36,
-        212, 41, 34, 44, 209, 201, 176, 205, 221, 209, 48, 215, 37, 179, 44, 187, 41, 179, 210,
-        191, 40, 211, 181, 176, 59, 52, 184, 42, 206, 176, 180, 37, 188, 202, 210, 178, 44, 206,
-        36, 57, 203, 41, 214, 191, 39, 168, 46, 185, 222, 206, 205, 185, 196, 50, 213, 218
-    };
-
-    */
 
     // orig 2x3
+    int mode = ENC_MODE;
+    int imageH = 2;
+    int imageW = 3;
     unsigned char imageBytes[] = {
         201, 40, 208, 214, 53, 221, 216, 50, 220,
         200, 39, 207, 213, 52, 220, 216, 50, 220
     };
-/*
+ /*
     // enc 2x3 2 rounds
-    unsigned char imageBytes[] = {
-        241, 197, 171,  77, 121, 26, 101, 155, 186,
-        226, 110,   0, 231, 214, 7, 216, 156, 25
-    };*/
-
+    sumOfAllImageBytes = 2840; // set if decryption mode is on!
+    int mode = DEC_MODE;
     int imageH = 2;
     int imageW = 3;
+    unsigned char imageBytes[] = {
+        60, 90, 93, 241, 230, 60, 122, 214, 108,
+        53, 253, 63, 33, 143, 147, 216, 192, 16
+    };
+*/
     int numberOfImageBytes = imageH*imageW*3;
-    int mode = ENC_MODE;
-
     int encryptionRounds = 2;
 
     // values would have to be based on an key phrase or similar
@@ -119,17 +90,6 @@ int main(int argc, char* argv[]) {
     diffuSetups[1].x = 0.360000000000001;
     diffuSetups[1].y = 0.360000000000002;
 
-    /*
-    diffuSetups[0].miu = 0.8597000122;
-    diffuSetups[0].x = 0.7733460001;
-    diffuSetups[0].y = 0.6543224322;
-
-    diffuSetups[1].miu = 0.84234123412;
-    diffuSetups[1].x = 0.78225545794;
-    diffuSetups[1].y = 0.66346604384;
-    */
-
-    long sumOfAllImageBytes = 2840; // set if decryption mode is on!
     if(mode == ENC_MODE) {
         sumOfAllImageBytes = 0;
         for(int i = 0; i < numberOfImageBytes; i++) {
@@ -137,23 +97,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
-
     runAlgorithm(mode, imageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
-
-
-
-/*
-    char encryptedSuffix[] = ".encrypted";
-    strcat(filePath, encryptedSuffix);
-    PTF_IMPT("new filename = %s\n", filePath);
-
-    FILE *encryptedImageBytes = fopen(filePath, "w");
-    for (i = 0; i < numberOfImageBytes; i++)
-    {
-        fprintf(encryptedImageBytes, "%u ", imageBytes[i]);
-    }
-    fclose(encryptedImageBytes);*/
 
     return 0;
 }

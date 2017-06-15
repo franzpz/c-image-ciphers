@@ -4,7 +4,7 @@
 #include <math.h>
 
 //#define DEV 1
-//#define TEST 1
+#define TEST 1
 
 #ifdef DEV
     #define PTF(A,...) printf(A,##__VA_ARGS__);
@@ -32,4 +32,5 @@ typedef struct DiffusionSetups {
     double x; // 0 < x < 1
 } DiffusionSetup;
 
+// run the cipher the the selected mode
 void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, long sumOfAllImageBytes, PermutationSetup permutationSetups[4], DiffusionSetup diffusionSetups[2], int encryptionRounds);

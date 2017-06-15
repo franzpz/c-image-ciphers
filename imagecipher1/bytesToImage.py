@@ -23,4 +23,4 @@ print data
 
 im = Image.new("RGB", (width, height))
 im.putdata(data)
-im.save(filename + ".decrypted", "JPEG")
+im.save(filename + ".png", "PNG")

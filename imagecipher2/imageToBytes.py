@@ -5,6 +5,11 @@ filename = str(sys.argv[1])
 image = Image.open(filename)
 pix = image.load()
 
+mode = "RGBA"
+
+if len(sys.argv) == 3:
+	mode = str(sys.argv[2]);
+
 x = 0
 y = 0
 
@@ -15,7 +20,8 @@ for y in range(0, image.size[1]):
 		imagePixelValues.append(pix[x,y][0])
 		imagePixelValues.append(pix[x,y][1])
 		imagePixelValues.append(pix[x,y][2])
-		"""imagePixelValues.append(pix[x,y][3])"""
+		if(mode == "RGBA"):
+			imagePixelValues.append(pix[x,y][3])
 
 print "size of image"
 print len(imagePixelValues)

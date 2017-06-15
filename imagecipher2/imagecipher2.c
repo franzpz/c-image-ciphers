@@ -4,11 +4,17 @@
 #include <math.h>
 #include "imagecipher2.h"
 
-static double LOGISTIC_R = 3.900000000000;
-static double DIVISOR_M1 = 1000.0;
-static double PRECISION = 10000000000000.0;
+// constant for running logistic map
+static double LOGISTIC_R = 3.712345;
 
+// used to cut of incorrect precision values on double values
+// used (int)(value/PRECISION) / PRECISION
+static double PRECISION = 1000000000000.0;
+
+// convert a value from the logistic map to the range of an image byte = 0-255
 unsigned char convertM2(double x) {
+
+    return ((int)x) % 256;
 
     //return ((int)x) % 256;
     static double minLogistic = 0.0;
@@ -27,7 +33,12 @@ unsigned char convertM2(double x) {
     //return (unsigned char)(((int)((((x - minLogistic) * rangeImage) / rangeLogistic) + minImage)) % 256);
 }
 
+// convert a value from image bytes (as double because calculations could have happenend before) to logistic map range 0-1
 double convertM1(double x) {
+    static double DIVISOR_M1 = 1000.0;
+
+    return x / DIVISOR_M1;
+
     static double minLogistic = 0.0;
     static double maxLogistic = 1.0;
     static double rangeLogistic = 1.0 - 0.0;
@@ -48,8 +59,7 @@ AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     param.C = 0;
 
     for(int i = 0; i < KEY_SIZE; i++) {
-        //r += ((double)key[i])/1000.0;
-        r += ((double)key[i]) / DIVISOR_M1;
+        r += convertM1((double)key[i]);
         param.C = (param.C + key[i]) % 256;
     }
 
@@ -57,8 +67,8 @@ AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     double xn = param.X;
 
     // skip first 1000 Logistic Map repititions
-    /*for(int i = 0; i < 1000; i++)
-        xn = LOGISTIC_R * xn * (1.0 - xn);*/
+    //for(int i = 0; i < 1000; i++)
+    //    xn = LOGISTIC_R * xn * (1.0 - xn);
 
     param.X = xn;
 
@@ -79,11 +89,11 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
     int nextKeyPos;
 
     for(int l = 0; l < numberOfImageBytes; l++) {
+        // start at key pos 0 again after reaching end of key
         nextKeyPos = (l+1) % KEY_SIZE;
 
-        //x = convertM1((double)x +(double)lastC+(double)key[l]);
-        x = ((double)x +(double)lastC+(double)key[l]) / DIVISOR_M1;
-        //x = round(x * PRECISION) / PRECISION;
+        x = convertM1((double)x +(double)lastC+(double)key[l]);
+        x = round(x * PRECISION) / PRECISION;
 
         numberOfLogisticMapRepititions = key[nextKeyPos] + lastC;
 
@@ -94,8 +104,7 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
             logisticSum += xn;
         }
 
-        imageBytes[l] = (((int)imageBytes[l]) + ((int)logisticSum % 256)) % 256;
-        //imageBytes[l] = (((int)imageBytes[l]) + convertM2(logisticSum)) % 256;
+        imageBytes[l] = (((int)imageBytes[l]) + convertM2(logisticSum)) % 256;
         lastC = imageBytes[l];
     }
 
@@ -103,9 +112,11 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
     params->C = lastC;
 }
 
+// same as encryption, except convertedBytes = origBytes - convertM2(logisticSum)
+// copied, to avoid if in every iteration = better performance
 void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char key[KEY_SIZE]) {
 
-    if(numberOfImageBytes > BUFFER_SIZE)
+       if(numberOfImageBytes > BUFFER_SIZE)
         exit(1);
 
     double x = params->X;
@@ -116,10 +127,11 @@ void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
     int numberOfLogisticMapRepititions;
     int nextKeyPos;
 
-    for(int l = 0; l < BUFFER_SIZE; l++) {
+    for(int l = 0; l < numberOfImageBytes; l++) {
+        // start at key pos 0 again after reaching end of key
         nextKeyPos = (l+1) % KEY_SIZE;
 
-        x = ((double)x + (double)lastC + (double)key[l]) / DIVISOR_M1;
+        x = convertM1((double)x +(double)lastC+(double)key[l]);
         x = round(x * PRECISION) / PRECISION;
 
         numberOfLogisticMapRepititions = key[nextKeyPos] + lastC;
@@ -132,7 +144,7 @@ void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
         }
 
         lastC = imageBytes[l];
-        imageBytes[l] = (((int)imageBytes[l]) - (((int)logisticSum)%256)) % 256;
+        imageBytes[l] = (((int)imageBytes[l]) - convertM2(logisticSum)) % 256;
     }
 
     params->X = x;
