@@ -56,7 +56,7 @@ AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     return param;
 }
 
-void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char key[KEY_SIZE]) {
+void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char key[KEY_SIZE], unsigned char *iv) {
 
     if(numberOfImageBytes > BUFFER_SIZE)
         exit(1);
@@ -103,8 +103,17 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
 
         PTF("logisticSum = %.Ff\n", logisticSum);
 
+        PTF("IV bytes %u XOR %u = ", imageBytes[l], iv[l]);
+        // apply CBC before encryption
+        imageBytes[l] = iv[l]^imageBytes[l];
+        PTF("%u\n", imageBytes[l]);
+
+        // apply encryption
         imageBytes[l] = (((int)imageBytes[l]) + ((int)mpf_get_ui(logisticSum)) % 256) % 256;
         lastC = imageBytes[l];
+
+        // set iv for next encryption round
+        iv[l] = lastC;
     }
 
     mpf_set(params->X, x);
@@ -115,9 +124,9 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
 
 // same as encryption, except convertedBytes = origBytes - convertM2(logisticSum)
 // copied, to avoid if in every iteration = better performance
-void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char key[KEY_SIZE]) {
+void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char key[KEY_SIZE], unsigned char *iv) {
 
-   if(numberOfImageBytes > BUFFER_SIZE)
+       if(numberOfImageBytes > BUFFER_SIZE)
         exit(1);
 
     mpf_t x, xn, mpf_key, logisticSum, mpf_logistic_r, logistic_tmp;
@@ -164,6 +173,14 @@ void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
 
         lastC = imageBytes[l];
         imageBytes[l] = (((int)imageBytes[l]) - ((int)mpf_get_ui(logisticSum)) % 256) % 256;
+
+        // apply reverse cbc for decryption
+        PTF("IV bytes %u XOR %u = ", imageBytes[l], iv[l]);
+        imageBytes[l] = iv[l]^imageBytes[l];
+        PTF("%u\n", imageBytes[l]);
+
+        // set iv for next decryption round
+        iv[l] = lastC;
     }
 
     mpf_set(params->X, x);

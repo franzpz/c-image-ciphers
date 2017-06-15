@@ -5,7 +5,7 @@
 #include <gmp.h>
 
 // when DEV is defined we get all output, useful for debugging
-#define DEV 1
+//#define DEV 1
 // when TEST is defined we get minimum output, to verify expectations
 #define TEST 1
 
@@ -38,8 +38,8 @@ typedef struct AlgorithmParameters {
 } AlgorithmParameter;
 
 AlgorithmParameter generateInitialContitions(unsigned char *key);
-void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char *key);
-void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char *key);
+void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char *key, unsigned char *iv);
+void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char *key, unsigned char *iv);
 
 // only in header file for testing
 // convert a value from the logistic map to the range of an image byte = 0-255
