@@ -8,19 +8,19 @@ CC=gcc
 all: main 
 
 imagecipher2.o: imagecipher2.c imagecipher2.h 
-	$(CC) $(CFLAGS) $(LDLIBS) -c imagecipher2.c -lm
+	$(CC) $(CFLAGS) $(LDLIBS) -c imagecipher2.c -lm -lgmp
 
 test.o: test.c 
 	$(CC) $(CFLAGS) $(LDLIBS) -c test.c 
 
 test: clean imagecipher2.o test.o 
-	$(CC) $(CFLAGS) $(LDLIBS) imagecipher2.o test.o -lm -o test 
+	$(CC) $(CFLAGS) $(LDLIBS) imagecipher2.o test.o -lm -lgmp -o test 
 
 main.o: main.c 
 	$(CC) $(CFLAGS) $(LDLIBS) -c main.c 
 
 main: imagecipher2.o main.o 
-	$(CC) $(CFLAGS) $(LDLIBS) imagecipher2.o main.o -lm -o main 
+	$(CC) $(CFLAGS) $(LDLIBS) imagecipher2.o main.o -lm -lgmp -o main 
 
 clean:
 	rm -f *.o main test

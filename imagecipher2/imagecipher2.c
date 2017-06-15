@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <gmp.h>
 #include "imagecipher2.h"
 
 // constant for running logistic map
@@ -11,66 +12,46 @@ static double LOGISTIC_R = 3.712345;
 // used (int)(value/PRECISION) / PRECISION
 static double PRECISION = 1000000000000.0;
 
-// convert a value from the logistic map to the range of an image byte = 0-255
-unsigned char convertM2(double x) {
-
-    return ((int)x) % 256;
-
-    //return ((int)x) % 256;
-    static double minLogistic = 0.0;
-    static double maxLogistic = 1.0;
-    static double rangeLogistic = 1.0 - 0.0;
-
-    static double minImage = 0.0;
-    static double maxImage = 255.0;
-    static double rangeImage = 255.0 - 0.0;
-
-    while(x > maxLogistic)
-        x = x/10.0;
-
-    return (unsigned char)((((x - minLogistic) * rangeImage) / rangeLogistic) + minImage);
-
-    //return (unsigned char)(((int)((((x - minLogistic) * rangeImage) / rangeLogistic) + minImage)) % 256);
-}
-
-// convert a value from image bytes (as double because calculations could have happenend before) to logistic map range 0-1
-double convertM1(double x) {
-    static double DIVISOR_M1 = 1000.0;
-
-    return x / DIVISOR_M1;
-
-    static double minLogistic = 0.0;
-    static double maxLogistic = 1.0;
-    static double rangeLogistic = 1.0 - 0.0;
-
-    static double minImage = 0.0;
-    static double maxImage = 255.0;
-    static double rangeImage = 255.0 - 0.0;
-
-    x = ((int)x) % 256;
-
-    return (double)((((x - minImage) * rangeLogistic) / rangeImage) + minLogistic);
-}
+// used to convert the 0-255 value space to 0-1 value space
+static int DIVIDER = 1000;
 
 AlgorithmParameter generateInitialContitions(unsigned char key[KEY_SIZE]) {
     AlgorithmParameter param;
 
-    double r = 0;
+    mpf_t r, floored_r, divider, mpf_key;
+    mpf_inits(r, floored_r, divider, mpf_key, param.X, NULL);
+
+    mpf_set_ui(divider, (unsigned long int)DIVIDER);
+
     param.C = 0;
 
     for(int i = 0; i < KEY_SIZE; i++) {
-        r += convertM1((double)key[i]);
+        mpf_set_ui(mpf_key, (int)key[i]);
+        mpf_div(mpf_key, mpf_key, divider);
+
+        PTF("key = %.Ff\n", mpf_key);
+
+        mpf_add(r, r, mpf_key);
+
+        PTF("r = %.Ff\n", r);
+
         param.C = (param.C + key[i]) % 256;
     }
 
-    param.X = r - floor(r);
-    double xn = param.X;
+    mpf_floor(floored_r, r);
+    PTF("floored_r = %.Ff\n", floored_r);
+    mpf_sub(param.X, r, floored_r);
+
+    mpf_clears(r, floored_r, divider, mpf_key, NULL);
+
+    //param.X = r - floor(r);
+    //double xn = param.X;
 
     // skip first 1000 Logistic Map repititions
     //for(int i = 0; i < 1000; i++)
     //    xn = LOGISTIC_R * xn * (1.0 - xn);
 
-    param.X = xn;
+    //param.X = xn;
 
     return param;
 }
@@ -80,11 +61,14 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
     if(numberOfImageBytes > BUFFER_SIZE)
         exit(1);
 
-    double x = params->X;
+    mpf_t x, xn, mpf_key, logisticSum, mpf_logistic_r, logistic_tmp;
+    mpf_inits(x, xn, mpf_key, logisticSum, mpf_logistic_r, logistic_tmp, NULL);
+
+    mpf_set(x, params->X);
+    mpf_set_d(mpf_logistic_r, LOGISTIC_R);
+
     unsigned char lastC = params->C;
 
-    double xn;
-    double logisticSum;
     int numberOfLogisticMapRepititions;
     int nextKeyPos;
 
@@ -92,38 +76,58 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
         // start at key pos 0 again after reaching end of key
         nextKeyPos = (l+1) % KEY_SIZE;
 
-        x = convertM1((double)x +(double)lastC+(double)key[l]);
-        x = round(x * PRECISION) / PRECISION;
+        mpf_set_ui(mpf_key, (int)key[l]);
+
+        mpf_add_ui(mpf_key, mpf_key, (int)lastC);
+        mpf_add(x, x, mpf_key);
+        mpf_div_ui(x, x, DIVIDER);
+
+        PTF("index: %d, x = %.Ff\n", l, x);
+
+        //x = convertM1((double)x +(double)lastC+(double)key[l]);
+        //x = round(x * PRECISION) / PRECISION;
 
         numberOfLogisticMapRepititions = key[nextKeyPos] + lastC;
 
-        xn = x;
-        logisticSum = 0.0;
+        mpf_set(xn, x);
+        mpf_set_ui(logisticSum, 0);
         for(int i = 0; i < numberOfLogisticMapRepititions; i++) {
-            xn = LOGISTIC_R * xn * (1.0 - xn);
-            logisticSum += xn;
+
+            // xn = LOGISTIC_R * xn * (1.0 - xn);
+            mpf_ui_sub(logistic_tmp, 1, xn);
+            mpf_mul(xn, mpf_logistic_r, xn);
+            mpf_mul(xn, xn, logistic_tmp);
+
+            mpf_add(logisticSum, logisticSum, xn);
         }
 
-        imageBytes[l] = (((int)imageBytes[l]) + convertM2(logisticSum)) % 256;
+        PTF("logisticSum = %.Ff\n", logisticSum);
+
+        imageBytes[l] = (((int)imageBytes[l]) + ((int)mpf_get_ui(logisticSum)) % 256) % 256;
         lastC = imageBytes[l];
     }
 
-    params->X = x;
+    mpf_set(params->X, x);
     params->C = lastC;
+
+    mpf_clears(x, xn, mpf_key, logisticSum, mpf_logistic_r, logistic_tmp, NULL);
 }
 
 // same as encryption, except convertedBytes = origBytes - convertM2(logisticSum)
 // copied, to avoid if in every iteration = better performance
 void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char key[KEY_SIZE]) {
 
-       if(numberOfImageBytes > BUFFER_SIZE)
+   if(numberOfImageBytes > BUFFER_SIZE)
         exit(1);
 
-    double x = params->X;
+    mpf_t x, xn, mpf_key, logisticSum, mpf_logistic_r, logistic_tmp;
+    mpf_inits(x, xn, mpf_key, logisticSum, mpf_logistic_r, logistic_tmp, NULL);
+
+    mpf_set(x, params->X);
+    mpf_set_d(mpf_logistic_r, LOGISTIC_R);
+
     unsigned char lastC = params->C;
 
-    double xn;
-    double logisticSum;
     int numberOfLogisticMapRepititions;
     int nextKeyPos;
 
@@ -131,22 +135,39 @@ void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
         // start at key pos 0 again after reaching end of key
         nextKeyPos = (l+1) % KEY_SIZE;
 
-        x = convertM1((double)x +(double)lastC+(double)key[l]);
-        x = round(x * PRECISION) / PRECISION;
+        mpf_set_ui(mpf_key, (int)key[l]);
+
+        mpf_add_ui(mpf_key, mpf_key, (int)lastC);
+        mpf_add(x, x, mpf_key);
+        mpf_div_ui(x, x, DIVIDER);
+
+        PTF("index: %d, x = %.Ff\n", l, x);
+
+        //x = convertM1((double)x +(double)lastC+(double)key[l]);
+        //x = round(x * PRECISION) / PRECISION;
 
         numberOfLogisticMapRepititions = key[nextKeyPos] + lastC;
 
-        xn = x;
-        logisticSum = 0.0;
+        mpf_set(xn, x);
+        mpf_set_ui(logisticSum, 0);
         for(int i = 0; i < numberOfLogisticMapRepititions; i++) {
-            xn = LOGISTIC_R * xn * (1.0 - xn);
-            logisticSum += xn;
+
+            // xn = LOGISTIC_R * xn * (1.0 - xn);
+            mpf_ui_sub(logistic_tmp, 1, xn);
+            mpf_mul(xn, mpf_logistic_r, xn);
+            mpf_mul(xn, xn, logistic_tmp);
+
+            mpf_add(logisticSum, logisticSum, xn);
         }
 
+        PTF("logisticSum = %.Ff\n", logisticSum);
+
         lastC = imageBytes[l];
-        imageBytes[l] = (((int)imageBytes[l]) - convertM2(logisticSum)) % 256;
+        imageBytes[l] = (((int)imageBytes[l]) - ((int)mpf_get_ui(logisticSum)) % 256) % 256;
     }
 
-    params->X = x;
+    mpf_set(params->X, x);
     params->C = lastC;
+
+    mpf_clears(x, xn, mpf_key, logisticSum, mpf_logistic_r, logistic_tmp, NULL);
 }

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "imagecipher2.h"
 #include "time.h"
+#include <gmp.h>
 
 void test2x4ImageEncryption() {
 
@@ -19,9 +20,14 @@ void test2x4ImageEncryption() {
         66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255, 66, 244, 125, 255
     };
 
-    unsigned char expectedEncryptedImageBytes[] = {
+    /*unsigned char expectedEncryptedImageBytes[] = {
         154, 124, 242, 193, 229, 177, 23, 46, 128, 107, 229, 186, 225, 172, 19, 48, 
         134, 109, 229, 184, 221, 169, 15, 44, 131, 111, 236, 187, 222, 167, 235, 188
+    };*/
+
+    unsigned char expectedEncryptedImageBytes[] = {
+    	154, 124, 242, 192, 229, 175, 23, 45, 128, 106, 228, 185, 223, 169, 16, 47, 
+    	135, 108, 228, 181, 220, 168, 15, 44, 131, 111, 235, 185, 219, 166, 235, 188
     };
 
     int numberOfImageBytes = 32;
@@ -46,7 +52,7 @@ void test2x4ImageEncryption() {
 
     AlgorithmParameter params = generateInitialContitions(key);
 
-    PTF("\nParams: c = %d, x = %0.15f\n", params.C, params.X);
+    PTF("\nParams: c = %d, x = %.Ff\n", params.C, params.X);
 
     encrypt(&params, origImageBytes, numberOfImageBytes, key);
 
@@ -71,7 +77,7 @@ void test2x4ImageEncryption() {
     printf(" Result: %s ----\n", result);
 }
 
-void test2x4ImageDecryption() {
+/*void test2x4ImageDecryption() {
 
     printf("\n---- test2x4ImageDecryption ----");
 
@@ -337,14 +343,14 @@ void testConvertM1AndM2() {
 
     printf(" Result: %s ----\n", result);
 }
-
+*/
 int main(int argc, char* argv[]) {
 
     test2x4ImageEncryption(); 
-    test2x4ImageDecryption(); 
+    //test2x4ImageDecryption(); 
 
-    test3x3ImageEncryption(); 
-    test3x3ImageDecryption();
+    //test3x3ImageEncryption(); 
+    //test3x3ImageDecryption();
 
     //testConvertM1AndM2();
 

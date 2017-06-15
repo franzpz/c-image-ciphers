@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 
     AlgorithmParameter params = generateInitialContitions(key);
 
-    PTF_IMPT("---- using parameters: X= %0.15f, C= %d \n", params.X, params.C);
+    PTF_IMPT("---- using parameters: X= %.Ff, C= %d \n", params.X, params.C);
 
     // measure overall time
     clock_t begin = clock();
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
 
         clock_t begin_algo = clock();
 
-        PTF("---- using parameters: X= %0.15f, C= %d \n", params.X, params.C);
+        PTF("---- using parameters: X= %.Ff, C= %d \n", params.X, params.C);
         if(mode == DEC_MODE) {
             decrypt(&params, buffer, bufferPos, key);
         }

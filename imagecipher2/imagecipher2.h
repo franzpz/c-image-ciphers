@@ -2,9 +2,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <gmp.h>
 
 // when DEV is defined we get all output, useful for debugging
-//#define DEV 1
+#define DEV 1
 // when TEST is defined we get minimum output, to verify expectations
 #define TEST 1
 
@@ -17,13 +18,13 @@
 #define KEY_SIZE 32 // as unsigned char array = 256 bit
 
 #ifdef DEV
-    #define PTF(A,...) printf(A,##__VA_ARGS__);
+    #define PTF(A,...) gmp_printf(A,##__VA_ARGS__);
 #else
     #define PTF(A,...) ;
 #endif
 
 #ifdef TEST
-    #define PTF_IMPT(A,...) printf(A,##__VA_ARGS__);
+    #define PTF_IMPT(A,...) gmp_printf(A,##__VA_ARGS__);
 #else
     #define PTF_IMPT(A,...) ;
 #endif
@@ -32,7 +33,7 @@ static int ENC_MODE = 1;
 static int DEC_MODE = 2;
 
 typedef struct AlgorithmParameters {
-    double X;
+    mpf_t X;
     unsigned char C;
 } AlgorithmParameter;
 
@@ -42,6 +43,6 @@ void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
 
 // only in header file for testing
 // convert a value from the logistic map to the range of an image byte = 0-255
-unsigned char convertM2(double x);
+unsigned char convertM2(mpf_t x);
 // convert a value from image bytes (as double because calculations could have happenend before) to logistic map range 0-1
-double convertM1(double x);
+void convertM1(mpf_t target, mpf_t source);
