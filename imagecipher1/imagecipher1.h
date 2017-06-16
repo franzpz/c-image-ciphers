@@ -9,13 +9,13 @@
 #ifdef DEV
     #define PTF(A,...) printf(A,##__VA_ARGS__);
 #else
-    #define PTF(A,...) do {} while(0);
+    #define PTF(A,...) ;
 #endif
 
 #ifdef TEST
     #define PTF_IMPT(A,...) printf(A,##__VA_ARGS__);
 #else
-    #define PTF_IMPT(A,...) do {} while(0);
+    #define PTF_IMPT(A,...) ;
 #endif
 
 static int ENC_MODE = 1;

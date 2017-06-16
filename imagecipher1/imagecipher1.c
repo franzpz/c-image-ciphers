@@ -2,12 +2,61 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include "imagecipher1.h"
 
 // helper functions
 void printSequence(double a[], long n);
 void sort(double a[], long n);
 int find(double array[], double data, long length);
+
+//  quickSort
+//
+//  This public-domain C implementation by Darel Rex Finley.
+//
+//  * Returns YES if sort was successful, or NO if the nested
+//    pivots went too deep, in which case your array will have
+//    been re-ordered, but probably not sorted correctly.
+//
+//  * This function assumes it is called with valid parameters.
+//
+//  * Example calls:
+//    quickSort(&myArray[0],5); // sorts elements 0, 1, 2, 3, and 4
+//    quickSort(&myArray[3],5); // sorts elements 3, 4, 5, 6, and 7
+//    http://alienryderflex.com/quicksort/
+
+int quickSort(double *arr, int elements) {
+
+  #define  MAX_LEVELS  1000
+
+  double piv;
+  int  beg[MAX_LEVELS], end[MAX_LEVELS], L, R, i = 0 ;
+
+  beg[0]=0; end[0]=elements;
+  while (i>=0) {
+    L=beg[i]; R=end[i]-1;
+    if (L<R) {
+      piv=arr[L]; if (i==MAX_LEVELS-1) return -1;
+      while (L<R) {
+        while (arr[R]>=piv && L<R) R--; if (L<R) arr[L++]=arr[R];
+        while (arr[L]<=piv && L<R) L++; if (L<R) arr[R--]=arr[L]; }
+      arr[L]=piv; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L; }
+    else {
+      i--; }}
+  return 0;
+}
+
+clock_t clockStart(char *message) {
+    PTF_IMPT("\nstarting %s \n", message);
+    return clock();
+}
+
+void clockStopAndWrite(char *message, clock_t begin) {
+    clock_t end = clock();
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+
+    PTF_IMPT("\n %s %0.15f seconds\n", message, time_spent);
+}
 
 // actual cipher functions
 // create permutation sequence based on logistic map
@@ -37,7 +86,7 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
         diffuSetups[i].y = diffusionSetups[i].y;
     }
 
-    #ifdef TEST
+    #ifdef DEV
     char *modeDesc = "encryption";
     if(mode == DEC_MODE)
         modeDesc = "decryption";
@@ -68,6 +117,8 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
     /*int permutationSequenceLogisticMap[4][numberOfImageBytes];
     unsigned char diffustionSequenceIkedaMap[4][numberOfImageBytes];*/
 
+    clock_t s = clockStart("start permutation");
+
     int **permutationSequenceLogisticMap = (int**)malloc(sizeof(int*)*4);
     unsigned char **diffustionSequenceIkedaMap = (unsigned char**)malloc(sizeof(unsigned char*)*4);
 
@@ -90,6 +141,8 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
     }
     PTF("-------------\n");
 
+    clock_t s2 = clockStart("   start create permSeq");
+
     // 2. create permutation = fill permutation array
     PTF("\n-------------Permutation Sequences \n");
     for(int i = 0; i < 4; i++) {
@@ -104,6 +157,11 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
         #endif
     }
 
+    clockStopAndWrite("   done permSeq", s2);
+
+    clockStopAndWrite("done permutation", s);
+
+    s = clockStart("start diffusion");
 
     // 3. generate control parameters for ikeda map based on image
     PTF("\n-------------Diffustion Parameters\n");
@@ -134,6 +192,10 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
         #endif
     }
 
+    clockStopAndWrite("done diffusion", s);
+
+    s = clockStart("encryption/decryption");
+
     if(mode == ENC_MODE) {
         // 5. Encryption rounds
         unsigned char *tmpImageBytes = (unsigned char*)malloc(sizeof(unsigned char)*numberOfImageBytes);
@@ -143,7 +205,7 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
         for(int i = 0; i < encryptionRounds; i++) {
 
             for(k = 0; k < 4; k++) {
-                PTF("\n----------- round %d after permutation %d [", i, k);
+                PTF("\n----------- round %d after permutation %ld [", i, k);
                 for(j = 0; j < numberOfImageBytes; j++) {
                     tmpImageBytes[j] = imageBytes[permutationSequenceLogisticMap[k][j]]^diffustionSequenceIkedaMap[k][j];
                     PTF("%u, ", tmpImageBytes[j]);
@@ -174,7 +236,7 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
 
             for(k = 3; k >= 0; k--) {
 
-                PTF("\n----------- round %d after permutation %d [", i, k);
+                PTF("\n----------- round %d after permutation %ld [", i, k);
                 for(j = 0; j < numberOfImageBytes; j++) {
                     tmpImageBytes[permutationSequenceLogisticMap[k][j]] = imageBytes[j]^diffustionSequenceIkedaMap[k][j];
                     PTF("%u, ", tmpImageBytes[j]);
@@ -196,6 +258,8 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
         free(tmpImageBytes);
     }
 
+    clockStopAndWrite("done enc/dec", s);
+
     for(int i = 0; i < 4; i++){
         free(permutationSequenceLogisticMap[i]);
         free(diffustionSequenceIkedaMap[i]);
@@ -204,7 +268,7 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
     free(permutationSequenceLogisticMap);
     free(diffustionSequenceIkedaMap);
 
-    #ifdef TEST
+    #ifdef DEV
     PTF_IMPT("\n----------- output Image [");
     for(int j = 0; j < numberOfImageBytes; j++) {
         PTF_IMPT("%u, ", imageBytes[j]);
@@ -275,6 +339,8 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
     double *sequenceS = (double*)malloc(sizeof(double)*sequenceLength);
     double xn = x;
 
+    clock_t z = clockStart("--- calc sequence s");
+
     // create original chaotic sequence (skip 1st 1000 entries)
     int transientResultsToSkip = 1000;
     for(long i = 0; i < transientResultsToSkip + sequenceLength; i++) {
@@ -282,6 +348,8 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
         if(i >= transientResultsToSkip)
             sequenceS[i-transientResultsToSkip] = xn;
     }
+
+    clockStopAndWrite("--- done calc sequence s", z);
     /*
     PTF("original sequence C\n");
     printSequence(sequenceC, 10);
@@ -290,12 +358,17 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
     // create sorted sequence S based on sequence C
     //memcpy(sequenceS, sequenceC, sequenceLength * sizeof(double));
 
-    sort(sequenceS, sequenceLength);
+    z = clockStart("--- sort sequence s");
 
+    quickSort(&sequenceS[0], sequenceLength);
+
+    clockStopAndWrite("--- done sort sequence s", z);
     /*
     PTF("sorted sequence S\n");
     printSequence(sequenceS, 10);
     */
+
+    z = clockStart("--- group sequence s");
 
     // better allocation (use malloc)
     int numberOfGroups = 10;
@@ -327,7 +400,7 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
 
         if(tmpResult1 >= tmpResult2)
             groupNumber = tmpResult1-tmpResult2;
-        if(tmpResult2 >= tmpResult1)
+        else if(tmpResult2 >= tmpResult1)
             groupNumber = tmpResult2-tmpResult1;
 
         if(groupNumber < 0 || groupNumber > 9)
@@ -339,6 +412,8 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
 
     long permutationIndex = 0;
 
+    clock_t groupS = clockStart("--- start find");
+
     for(int i = 0; i < numberOfGroups; i++) {
         if(permutationIndex >= sequenceLength)
             break;
@@ -349,6 +424,10 @@ void createPermutationSequence(int permutationSequence[], double r, double x, lo
             j++;
         }
     }
+
+    clockStopAndWrite("--- done find", groupS);
+
+    clockStopAndWrite("--- done group sequence s", z);
 
     for(int i = 0; i < numberOfGroups; i++){
         free(groupedArrays[i]);

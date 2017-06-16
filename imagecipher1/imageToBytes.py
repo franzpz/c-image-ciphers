@@ -18,7 +18,7 @@ for y in range(0, image.size[1]):
 
 print "size of image"
 print len(imagePixelValues)
-print imagePixelValues
+"""print imagePixelValues"""
 
 thefile = open(filename + 'bytes.txt', 'w')
 

@@ -1,19 +1,21 @@
 # depslib dependency file v1.0
-1497202496 source:/home/franz/Documents/imagecipher1/main.c
+1497612121 source:/home/franz/Documents/imagecipher1/main.c
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
+	<time.h>
+	<gmp.h>
 	"imagecipher1.h"
 
 1496504646 /home/franz/Documents/imagecipher1/debug.h
 
-1497202509 /home/franz/Documents/imagecipher1/imagecipher1.h
+1497612098 /home/franz/Documents/imagecipher1/imagecipher1.h
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
 	<math.h>
 
-1496998018 source:/home/franz/Documents/imagecipher1/imagecipher1.c
+1497603323 source:/home/franz/Documents/imagecipher1/imagecipher1.c
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
