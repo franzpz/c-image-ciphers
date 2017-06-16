@@ -126,7 +126,7 @@ void encrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOf
 // copied, to avoid if in every iteration = better performance
 void decrypt(AlgorithmParameter *params, unsigned char *imageBytes, int numberOfImageBytes, unsigned char key[KEY_SIZE], unsigned char *iv) {
 
-       if(numberOfImageBytes > BUFFER_SIZE)
+    if(numberOfImageBytes > BUFFER_SIZE)
         exit(1);
 
     mpf_t x, xn, mpf_key, logisticSum, mpf_logistic_r, logistic_tmp;
