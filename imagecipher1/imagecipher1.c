@@ -280,13 +280,9 @@ void runAlgorithm(int mode, unsigned char *imageBytes, long numberOfImageBytes, 
 void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned char mOneSequence[], unsigned char mTwoSequence[], long sequenceLength){
     int entriesToSkip = 1000;
     double multiply = pow(10.0, 16);
-    double absX;
-    double absY;
-    double xn = x;
-    double yn = y;
-    double tn;
-    double cosT;
-    double sinT;
+    double absX, absY, tn, cosT, sinT;
+    double xn = x, xn2;
+    double yn = y, yn2;
 
     PTF("--------- Creating Diffusion Sequence ---------\n")
 
@@ -297,8 +293,11 @@ void createDiffusionSequenceIkedaMap(double miu, double x, double y, unsigned ch
         cosT = cos(tn);
         sinT = sin(tn);
 
-        xn = 1.0 + miu * ((xn * cosT) - (yn * sinT));
-        yn = miu * ((xn * sinT) - (yn * cosT));
+        xn2 = 1.0 + miu * ((xn * cosT) - (yn * sinT));
+        yn2 = miu * ((xn * sinT) - (yn * cosT));
+
+        xn = xn2;
+        yn = yn2;
 
         if(i >= entriesToSkip) {
             absX = fabs(xn);
