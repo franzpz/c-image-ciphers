@@ -11,7 +11,7 @@
 int main(int argc, char* argv[]) {
 
     // -- reading input parameters
-    if(argc < 5) {
+    if(argc < 6) {
         printf("no file path provided and/or mode 1 = encryption, 2 = decryption, usage <path> <mode> <width> <height> <channels> <optional sum of orig image bytes>");
         exit(1);
     }
@@ -32,16 +32,12 @@ int main(int argc, char* argv[]) {
     long sumOfAllImageBytes = 0;
 
     if(mode == DEC_MODE) {
-        if(argc < 6) {
+        if(argc < 7) {
             fprintf(stderr, "decryption requires sum of all bytes of orig image\n");
             exit(1);
         }
         sumOfAllImageBytes = atol(argv[6]);
     }
-
-    /*int rounds = 5;
-    if(argc == 4)
-        rounds = atoi(argv[3]);*/
 
     PTF_IMPT("\nusing file: %s\n", filePath);
 
@@ -90,10 +86,9 @@ int main(int argc, char* argv[]) {
     PTF_IMPT("done reading file, got %d bytes; expected %d bytes! \n", k, numberOfImageBytes);
 
     numberOfImageBytes = k;
-    /**/
-/*
-    long sumOfAllImageBytes = 0;
 
+
+/*
     // for the encryption we need the size of the image
     // and for the decryption we need the sum of the image bytes of the plain image,
     // therefore I inserted this testdata below
@@ -124,17 +119,18 @@ int main(int argc, char* argv[]) {
         142, 66, 156, 210, 85, 8, 193, 122, 57, 128, 124, 152, 158, 247, 15, 16, 177, 242, 206, 232, 176, 174,
         41, 223, 102, 186, 125, 112, 29
     };
-
+*/
 
     // orig 2x3
+/*    long sumOfAllImageBytes = 0;
     int mode = ENC_MODE;
     int imageH = 2;
     int imageW = 3;
     unsigned char imageBytes[] = {
         201, 40, 208, 214, 53, 221, 216, 50, 220,
         200, 39, 207, 213, 52, 220, 216, 50, 220
-    };*/
- /*
+    };
+
     // enc 2x3 2 rounds
     sumOfAllImageBytes = 2840; // set if decryption mode is on!
     int mode = DEC_MODE;
@@ -149,29 +145,33 @@ int main(int argc, char* argv[]) {
     int encryptionRounds = 2;
 
     // values would have to be based on an key phrase or similar
-    PermutationSetup permSetups[4];
+    PermutationSetup *permSetups = (PermutationSetup*)malloc(sizeof(PermutationSetup)*4);
 
-    permSetups[0].r = 3.6000000001;
-    permSetups[0].x = 0.8000000001;
+    mpf_inits(permSetups[0].r, permSetups[0].x, permSetups[1].r, permSetups[1].x, permSetups[2].r, permSetups[2].x, permSetups[3].r, permSetups[3].x, NULL);
 
-    permSetups[1].r = 3.6000000002;
-    permSetups[1].x = 0.8000000002;
+    mpf_set_d(permSetups[0].r, 3.6000000001);
+    mpf_set_d(permSetups[0].x, 0.8000000001);
 
-    permSetups[2].r = 3.6000000003;
-    permSetups[2].x = 0.8000000003;
+    mpf_set_d(permSetups[1].r, 3.6000000002);
+    mpf_set_d(permSetups[1].x, 0.8000000002);
 
-    permSetups[3].r = 3.6000000004;
-    permSetups[3].x = 0.8000000004;
+    mpf_set_d(permSetups[2].r, 3.6000000003);
+    mpf_set_d(permSetups[2].x, 0.8000000003);
 
-    DiffusionSetup diffuSetups[2];
+    mpf_set_d(permSetups[3].r, 3.6000000004);
+    mpf_set_d(permSetups[3].x, 0.8000000004);
 
-    diffuSetups[0].miu = 0.600000000000001;
-    diffuSetups[0].x = 0.350000000000001;
-    diffuSetups[0].y = 0.350000000000002;
+    DiffusionSetup *diffuSetups = (DiffusionSetup*)malloc(sizeof(DiffusionSetup)*2);
 
-    diffuSetups[1].miu = 0.600000000000002;
-    diffuSetups[1].x = 0.360000000000001;
-    diffuSetups[1].y = 0.360000000000002;
+    mpf_inits(diffuSetups[0].miu, diffuSetups[0].x, diffuSetups[0].y, diffuSetups[1].miu, diffuSetups[1].x, diffuSetups[1].y, NULL);
+
+    mpf_set_d(diffuSetups[0].miu, 0.600000000000001);
+    mpf_set_d(diffuSetups[0].x, 0.350000000000001);
+    mpf_set_d(diffuSetups[0].y, 0.350000000000002);
+
+    mpf_set_d(diffuSetups[1].miu, 0.600000000000002);
+    mpf_set_d(diffuSetups[1].x, 0.360000000000001);
+    mpf_set_d(diffuSetups[1].y, 0.360000000000002);
 
     if(mode == ENC_MODE) {
         sumOfAllImageBytes = 0;
@@ -185,10 +185,13 @@ int main(int argc, char* argv[]) {
 
     runAlgorithm(mode, imageBytes, numberOfImageBytes, sumOfAllImageBytes, permSetups, diffuSetups, encryptionRounds);
 
-    clock_t end = clock();
-    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    mpf_clears(permSetups[0].r, permSetups[0].x, permSetups[1].r, permSetups[1].x, permSetups[2].r, permSetups[2].x, permSetups[3].r, permSetups[3].x, NULL);
+    mpf_clears(diffuSetups[0].miu, diffuSetups[0].x, diffuSetups[0].y, diffuSetups[1].miu, diffuSetups[1].x, diffuSetups[1].y, NULL);
 
-    PTF_IMPT("\ntook total %0.15f seconds\n", time_spent);
+    free(permSetups);
+    free(diffuSetups);
+
+    PTF_IMPT("\ntook total %0.15f seconds\n", (double)(clock() - begin) / CLOCKS_PER_SEC);
 
     FILE *convFile = fopen(convFilePath, "w");
     if (convFile == NULL) {
@@ -202,6 +205,8 @@ int main(int argc, char* argv[]) {
         fprintf(convFile, "%d ", (int)imageBytes[i]);
     }
     PTF("] ----\n")
+
+    free(imageBytes);
 
     return 0;
 }

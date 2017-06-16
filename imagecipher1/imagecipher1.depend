@@ -9,16 +9,17 @@
 
 1496504646 /home/franz/Documents/imagecipher1/debug.h
 
-1497612098 /home/franz/Documents/imagecipher1/imagecipher1.h
+1497633014 /home/franz/Documents/imagecipher1/imagecipher1.h
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
 	<math.h>
 
-1497603323 source:/home/franz/Documents/imagecipher1/imagecipher1.c
+1497636477 source:/home/franz/Documents/imagecipher1/imagecipher1.c
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
 	<math.h>
+	<time.h>
 	"imagecipher1.h"
 
